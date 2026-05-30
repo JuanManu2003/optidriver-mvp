@@ -6,7 +6,9 @@
       "mcp__Claude_Preview__preview_start",
       "Bash(git init *)",
       "Bash(git add *)",
-      "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'OptiDriver MVP: frontend, backend con WebSocket/OBD2 y configuración de despliegue *)"
+      "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'OptiDriver MVP: frontend, backend con WebSocket/OBD2 y configuración de despliegue *)",
+      "Bash(grep -E \"render.yaml|vercel.json|DEPLOY|env.example|\\\\.db$\")",
+      "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'Update local Claude Code permission allowlist *)"
     ]
   }
 }
