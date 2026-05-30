@@ -1,0 +1,12 @@
+node_modules
+dist
+.DS_Store
+*.local
+.env
+.env.local
+
+# Base de datos SQLite del backend (no subir datos locales)
+backend/*.db
+backend/*.db-journal
+backend/*.db-wal
+backend/*.db-shm

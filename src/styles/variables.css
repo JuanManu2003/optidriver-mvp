@@ -1,0 +1,32 @@
+:root {
+  /* Tema claro minimalista */
+  --bg: #F6F7F9;
+  --surface: #FFFFFF;
+  --surface-2: #F1F3F6;
+  --line: #E6E9EE;
+  --line-strong: #D7DCE3;
+
+  --text: #0F1419;
+  --muted: #667085;
+  --muted-2: #98A2B3;
+
+  --accent: #00A86B;
+  --accent-2: #00C781;
+  --accent-soft: rgba(0, 168, 107, 0.10);
+
+  --warning: #E5A000;
+  --warning-soft: rgba(229, 160, 0, 0.12);
+  --danger: #E5484D;
+  --danger-soft: rgba(229, 72, 77, 0.10);
+  --good: #00A86B;
+
+  --track: #EAECF0;
+
+  --radius: 16px;
+  --radius-sm: 12px;
+
+  /* Sombras suaves (sutilmente elevado) */
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow: 0 2px 8px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-lg: 0 8px 24px rgba(16, 24, 40, 0.08);
+}

@@ -1,0 +1,55 @@
+/**
+ * Ciudades y comunas principales de Chile (validación local, sin API externa).
+ * Fuente curada para conductores de apps en zonas urbanas.
+ */
+export const CHILE_CITIES = [
+  'Arica, Región de Arica y Parinacota',
+  'Iquique, Región de Tarapacá',
+  'Antofagasta, Región de Antofagasta',
+  'Calama, Región de Antofagasta',
+  'Copiapó, Región de Atacama',
+  'La Serena, Región de Coquimbo',
+  'Coquimbo, Región de Coquimbo',
+  'Ovalle, Región de Coquimbo',
+  'Viña del Mar, Región de Valparaíso',
+  'Valparaíso, Región de Valparaíso',
+  'Quilpué, Región de Valparaíso',
+  'Villa Alemana, Región de Valparaíso',
+  'San Antonio, Región de Valparaíso',
+  'Quillota, Región de Valparaíso',
+  "Rancagua, Región del Libertador General Bernardo O'Higgins",
+  "San Fernando, Región del Libertador General Bernardo O'Higgins",
+  'Talca, Región del Maule',
+  'Curicó, Región del Maule',
+  'Chillán, Región de Ñuble',
+  'Concepción, Región del Biobío',
+  'Talcahuano, Región del Biobío',
+  'Los Ángeles, Región del Biobío',
+  'Temuco, Región de La Araucanía',
+  'Villarrica, Región de La Araucanía',
+  'Valdivia, Región de Los Ríos',
+  'Osorno, Región de Los Lagos',
+  'Puerto Montt, Región de Los Lagos',
+  'Puerto Varas, Región de Los Lagos',
+  'Coyhaique, Región de Aysén',
+  'Punta Arenas, Región de Magallanes',
+  'Santiago, Región Metropolitana',
+  'Puente Alto, Región Metropolitana',
+  'Maipú, Región Metropolitana',
+  'La Florida, Región Metropolitana',
+  'Las Condes, Región Metropolitana',
+  'Ñuñoa, Región Metropolitana',
+  'San Bernardo, Región Metropolitana',
+  'Peñalolén, Región Metropolitana',
+  'La Pintana, Región Metropolitana',
+  'Quilicura, Región Metropolitana',
+  'Recoleta, Región Metropolitana',
+  'Independencia, Región Metropolitana',
+  'Estación Central, Región Metropolitana',
+  'Colina, Región Metropolitana',
+  'Melipilla, Región Metropolitana',
+];
+
+export function isValidChileCity(city) {
+  return CHILE_CITIES.includes(String(city || '').trim());
+}

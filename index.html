@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OptiDriver | FuelSense Pro</title>
+</head>
+<body>
+<div class="phone-shell">
+    <div id="toast" class="toast">
+      <strong id="toastTitle">Alerta</strong>
+      <p id="toastText" class="small">Mensaje del sistema.</p>
+    </div>
+
+    <main class="app">
+
+      <!-- SPLASH / BIENVENIDA -->
+      <section id="welcome" class="screen active">
+        <div class="splash">
+          <div>
+            <div class="splash-hero">
+              <div class="splash-logo">
+                <svg viewBox="0 0 100 100" fill="none" aria-label="FuelSense logo">
+                  <path d="M52 7C36 27 22 45 22 65C22 84 36 94 52 94C68 94 82 84 82 65C82 45 68 27 52 7Z" fill="#F5F7FA"/>
+                  <path d="M41 35H68L62 45H38C32 45 29 52 34 56L63 78H43L25 64C14 55 21 35 41 35Z" fill="#050608"/>
+                  <path d="M23 64C43 70 56 79 67 94C52 96 38 92 28 82C24 78 22 72 23 64Z" fill="#00C781"/>
+                  <path d="M35 70C50 75 60 85 67 94" stroke="#F5F7FA" stroke-width="5" stroke-linecap="round"/>
+                  <path d="M20 63L10 60M22 72L13 76M27 80L20 88" stroke="#050608" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+              </div>
+
+              <div>
+                <div class="hero-title">Fuel<span>Sense</span></div>
+                <p class="subtitle">Conduce mejor. Ahorra más.</p>
+              </div>
+            </div>
+
+            <div class="hero-card">
+              <h2>Controla tu consumo en tiempo real</h2>
+              <p class="muted">
+                Visualiza litros, pesos y hábitos de conducción para reducir costos en cada viaje.
+              </p>
+
+              <div class="hero-metrics">
+                <div class="metric-mini">
+                  <strong id="heroEfficiency">+12%</strong>
+                  <span class="small">eficiencia semanal</span>
+                </div>
+                <div class="metric-mini">
+                  <strong id="heroSavings">$18.450</strong>
+                  <span class="small">ahorro estimado</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <button class="btn" data-nav="register">Crear cuenta</button>
+            <button class="btn secondary" data-nav="login">Iniciar sesión</button>
+            <button type="button" class="btn hidden" id="welcomeContinue" data-action="welcome-continue">Ir a mi panel</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- REGISTRO -->
+      <section id="register" class="screen">
+        <div class="topbar">
+          <button class="back-btn" data-nav="welcome">←</button>
+          <div class="logo">
+            <svg viewBox="0 0 100 100" fill="none">
+              <path d="M52 7C36 27 22 45 22 65C22 84 36 94 52 94C68 94 82 84 82 65C82 45 68 27 52 7Z" fill="#F5F7FA"/>
+              <path d="M41 35H68L62 45H38C32 45 29 52 34 56L63 78H43L25 64C14 55 21 35 41 35Z" fill="#050608"/>
+              <path d="M23 64C43 70 56 79 67 94C52 96 38 92 28 82C24 78 22 72 23 64Z" fill="#00C781"/>
+              <path d="M35 70C50 75 60 85 67 94" stroke="#F5F7FA" stroke-width="5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div></div>
+        </div>
+
+        <h1>Crear cuenta</h1>
+        <p class="subtitle">Ingresa la información esencial para iniciar tu perfil de conducción.</p>
+
+        <div id="registerErrors" class="form-errors hidden" role="alert"></div>
+
+        <div class="form" id="registerForm" novalidate>
+          <div class="row">
+            <div class="input-group">
+              <label for="regFirstName">Nombre</label>
+              <input id="regFirstName" type="text" autocomplete="given-name" placeholder="Carlos" maxlength="40" required />
+              <span class="field-error" id="regFirstName-error"></span>
+            </div>
+            <div class="input-group">
+              <label for="regLastName">Apellido</label>
+              <input id="regLastName" type="text" autocomplete="family-name" placeholder="Méndez" maxlength="40" required />
+              <span class="field-error" id="regLastName-error"></span>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="regEmail">Correo electrónico</label>
+            <input id="regEmail" type="email" autocomplete="email" placeholder="correo@ejemplo.com" maxlength="254" required />
+            <span class="field-error" id="regEmail-error"></span>
+          </div>
+
+          <div class="input-group">
+            <label for="regPhone">Teléfono móvil (Chile)</label>
+            <input id="regPhone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="9 1234 5678" maxlength="15" required />
+            <span class="field-hint">Solo números. Formato: 9 dígitos (ej. 912345678)</span>
+            <span class="field-error" id="regPhone-error"></span>
+          </div>
+
+          <div class="input-group">
+            <label for="regPassword">Contraseña</label>
+            <input id="regPassword" type="password" autocomplete="new-password" placeholder="Mín. 6 caracteres, letras y números" minlength="6" maxlength="64" required />
+            <span class="field-error" id="regPassword-error"></span>
+          </div>
+
+          <div class="input-group">
+            <label for="regPasswordConfirm">Confirmar contraseña</label>
+            <input id="regPasswordConfirm" type="password" autocomplete="new-password" placeholder="Repite tu contraseña" minlength="6" maxlength="64" required />
+            <span class="field-error" id="regPasswordConfirm-error"></span>
+          </div>
+
+          <button type="button" class="btn" data-action="register-submit">Crear cuenta</button>
+        </div>
+
+        <p class="switch-line">
+          ¿Ya tienes cuenta?
+          <button data-nav="login">Iniciar sesión</button>
+        </p>
+
+        <p class="legal">
+          Al crear una cuenta aceptas los términos de uso y la política de privacidad de FuelSense.
+        </p>
+      </section>
+
+      <!-- LOGIN -->
+      <section id="login" class="screen">
+        <div class="topbar">
+          <button class="back-btn" data-nav="welcome">←</button>
+          <div></div>
+          <div></div>
+        </div>
+
+        <h1>Iniciar sesión</h1>
+        <p class="subtitle">Accede a tu panel de consumo y conducción eficiente.</p>
+
+        <div id="loginErrors" class="form-errors hidden" role="alert"></div>
+
+        <div class="form" id="loginForm" novalidate>
+          <div class="input-group">
+            <label for="loginEmail">Correo electrónico</label>
+            <input id="loginEmail" type="email" autocomplete="email" placeholder="correo@ejemplo.com" maxlength="254" required />
+            <span class="field-error" id="loginEmail-error"></span>
+          </div>
+
+          <div class="input-group">
+            <label for="loginPassword">Contraseña</label>
+            <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Tu contraseña" minlength="6" maxlength="64" required />
+            <span class="field-error" id="loginPassword-error"></span>
+          </div>
+
+          <button type="button" class="btn" data-action="login-submit">Ingresar</button>
+        </div>
+
+        <p class="switch-line">
+          ¿No tienes cuenta?
+          <button data-nav="register">Crear cuenta</button>
+        </p>
+      </section>
+
+      <!-- PERFIL BÁSICO -->
+      <section id="setupProfile" class="screen">
+        <div class="topbar">
+          <button class="back-btn" data-nav="register">←</button>
+          <span class="small">Paso 1 de 2</span>
+          <div></div>
+        </div>
+
+        <h1>Perfil básico</h1>
+        <p class="subtitle">Estos datos permiten personalizar los consejos y el cálculo de ahorro.</p>
+
+        <div id="setupProfileErrors" class="form-errors hidden" role="alert"></div>
+
+        <div class="form" id="setupProfileForm" novalidate>
+          <div class="input-group">
+            <label for="city">Ciudad</label>
+            <select id="city" required>
+              <option value="">Selecciona tu ciudad</option>
+            </select>
+            <span class="field-hint">Lista oficial de ciudades y comunas de Chile</span>
+            <span class="field-error" id="city-error"></span>
+          </div>
+
+          <div class="input-group">
+            <label>Plataforma principal</label>
+            <div class="platforms">
+              <button type="button" class="pill active">Uber</button>
+              <button type="button" class="pill">DiDi</button>
+              <button type="button" class="pill">Cabify</button>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Horas de conducción al día</label>
+            <div class="range-wrap">
+              <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span class="muted">1 h</span>
+                <strong><span id="hoursValue">8</span> h</strong>
+                <span class="muted">16+ h</span>
+              </div>
+              <input type="range" min="1" max="16" value="8" />
+            </div>
+          </div>
+
+          <button type="button" class="btn" data-action="setup-profile-continue">Continuar</button>
+        </div>
+      </section>
+
+      <!-- VEHÍCULO Y OBD2 -->
+      <section id="setupVehicle" class="screen">
+        <div class="topbar">
+          <button class="back-btn" data-nav="setupProfile">←</button>
+          <span class="small">Paso 2 de 2</span>
+          <div></div>
+        </div>
+
+        <h1>Vehículo y OBD2</h1>
+        <p class="subtitle">Ingresa datos simples del auto y simula la conexión al adaptador.</p>
+
+        <div id="setupVehicleErrors" class="form-errors hidden" role="alert"></div>
+
+        <div class="form" id="setupVehicleForm" novalidate>
+          <div class="row">
+            <div class="input-group">
+              <label for="brand">Marca</label>
+              <select id="brand" required>
+                <option value="">Selecciona marca</option>
+              </select>
+              <span class="field-error" id="brand-error"></span>
+            </div>
+
+            <div class="input-group">
+              <label for="model">Modelo</label>
+              <select id="model" required disabled>
+                <option value="">Primero elige una marca</option>
+              </select>
+              <span class="field-error" id="model-error"></span>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="input-group">
+              <label for="year">Año</label>
+              <select id="year" required>
+                <option value="">Selecciona año</option>
+              </select>
+              <span class="field-error" id="year-error"></span>
+            </div>
+
+            <div class="input-group">
+              <label>Combustible</label>
+              <select id="fuelType">
+                <option>Gasolina</option>
+                <option>Diésel</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="obd-card">
+            <div>
+              <h3>Conexión OBD2</h3>
+              <p class="small">Conecta vía Bluetooth para recibir datos en tiempo real.</p>
+            </div>
+            <div class="obd-icon">⌁</div>
+          </div>
+
+          <button class="btn" data-action="connect-obd">Conectar dispositivo</button>
+          <button class="btn secondary" data-action="skip-obd">Entrar con datos simulados</button>
+        </div>
+      </section>
+
+      <!-- DASHBOARD EN VIVO -->
+      <section id="dashboard" class="screen">
+        <div class="dashboard-header">
+          <button class="icon-btn" data-action="dashboard-menu">☰</button>
+          <div class="live-title">
+            <h3>En vivo</h3>
+            <span class="status-dot" id="elmStatusBadge">Conectado</span>
+          </div>
+          <button class="icon-btn" data-action="dashboard-alert">⌁</button>
+        </div>
+
+        <div class="score-card">
+          <div class="score-ring">
+            <div class="score-inner">
+              <div>
+                <strong id="scoreValue">86</strong>
+                <span id="scoreLabel">Excelente</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric-card">
+            <p class="metric-label">Combustible</p>
+            <p class="metric-value"><span id="fuelValue">6,2</span></p>
+            <p class="unit">L/100 km</p>
+          </div>
+
+          <div class="metric-card">
+            <p class="metric-label">Velocidad</p>
+            <p class="metric-value"><span id="speedValue">58</span></p>
+            <p class="unit">km/h</p>
+          </div>
+
+          <div class="metric-card">
+            <p class="metric-label">RPM</p>
+            <p class="metric-value"><span id="rpmValue">1850</span></p>
+            <p class="unit">rpm</p>
+          </div>
+
+          <div class="metric-card">
+            <p class="metric-label">Costo viaje</p>
+            <p class="metric-value">$<span id="costValue">2450</span></p>
+            <p class="unit">CLP aprox.</p>
+          </div>
+        </div>
+
+        <div class="card savings-card" id="sessionSummary">
+          <p class="metric-label">Sesión en curso</p>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <strong id="sessionLoss">$0</strong>
+              <span class="small">pérdida</span>
+            </div>
+            <div class="summary-item">
+              <strong id="sessionSavings">$0</strong>
+              <span class="small">ahorro</span>
+            </div>
+            <div class="summary-item">
+              <strong id="sessionDistance">0 km</strong>
+              <span class="small">recorrido</span>
+            </div>
+          </div>
+          <p class="small" style="margin-top:10px;">Score promedio sesión: <strong id="sessionAvgScore">—</strong></p>
+        </div>
+
+        <div class="trip-controls">
+          <button class="btn secondary" id="toggleTripBtn" data-action="toggle-trip">⏸ Pausar</button>
+          <button class="btn" id="finishTripBtn" data-action="finish-trip">Finalizar y guardar</button>
+        </div>
+
+        <p class="section-title">Eventos en tiempo real</p>
+
+        <div id="eventList">
+          <div class="event">
+            <div class="event-icon danger">!</div>
+            <div>
+              <strong>Frenado brusco detectado</strong>
+              <p class="small">Hace 2 min · Costo estimado: $45 CLP</p>
+            </div>
+          </div>
+
+          <div class="event">
+            <div class="event-icon good">✓</div>
+            <div>
+              <strong>Zona de velocidad eficiente</strong>
+              <p class="small">Hace 8 min · Buen rendimiento</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIAJES -->
+      <section id="trips" class="screen">
+        <div class="topbar">
+          <div>
+            <h2>Historial de viajes</h2>
+            <p class="small">Últimos viajes realizados</p>
+          </div>
+          <button class="icon-btn" data-action="trips-filter">⌕</button>
+        </div>
+
+        <div class="card savings-card">
+          <p class="metric-label">Ahorro semanal</p>
+          <p class="big" id="weeklySavings">$18.450 CLP</p>
+          <p class="small">Comparado con un patrón de conducción promedio.</p>
+
+          <div class="summary-grid">
+            <div class="summary-item">
+              <strong><span id="weeklyTrips">23</span></strong>
+              <span class="small">viajes</span>
+            </div>
+            <div class="summary-item">
+              <strong><span id="weeklyKm">312</span></strong>
+              <span class="small">km</span>
+            </div>
+            <div class="summary-item">
+              <strong><span id="weeklyEfficiency">+12%</span></strong>
+              <span class="small">eficiencia</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="section-title">Viajes recientes</p>
+
+        <div id="tripsList"></div>
+      </section>
+
+      <!-- INSIGHTS -->
+      <section id="insights" class="screen">
+        <div class="topbar">
+          <div>
+            <h2>Insights</h2>
+            <p class="small">Análisis de tu conducción</p>
+          </div>
+        </div>
+
+        <div class="card" id="projectionCard">
+          <p class="metric-label">Proyección de ahorro</p>
+          <p class="small" id="projectionContext">Según tu plataforma y horas de conducción.</p>
+          <div class="summary-grid" style="grid-template-columns:1fr 1fr;">
+            <div class="summary-item">
+              <strong id="projDaily">$0</strong>
+              <span class="small">gasto combustible/mes</span>
+            </div>
+            <div class="summary-item">
+              <strong id="projMonthly">$0</strong>
+              <span class="small">ahorro vs promedio/mes</span>
+            </div>
+          </div>
+          <p class="small" id="projDetail" style="margin-top:10px;"></p>
+        </div>
+
+        <div class="export-actions">
+          <button class="btn secondary" data-action="export-csv">⇩ Exportar CSV</button>
+          <button class="btn" data-action="export-pdf">⇩ Exportar PDF</button>
+        </div>
+
+        <div class="card chart-card">
+          <p class="metric-label">Consumo últimos 7 días</p>
+          <svg class="chart" viewBox="0 0 330 120" preserveAspectRatio="none">
+            <line x1="0" y1="105" x2="330" y2="105" stroke="#E6E9EE" stroke-width="1"/>
+            <polyline points="0,72 55,56 110,80 165,44 220,66 275,50 330,62"
+              fill="none" stroke="#00C781" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="0" cy="72" r="5" fill="#00C781"/>
+            <circle cx="55" cy="56" r="5" fill="#00C781"/>
+            <circle cx="110" cy="80" r="5" fill="#00C781"/>
+            <circle cx="165" cy="44" r="5" fill="#00C781"/>
+            <circle cx="220" cy="66" r="5" fill="#00C781"/>
+            <circle cx="275" cy="50" r="5" fill="#00C781"/>
+            <circle cx="330" cy="62" r="5" fill="#00C781"/>
+          </svg>
+          <div style="display:flex; justify-content:space-between;" class="small">
+            <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+          </div>
+        </div>
+
+        <p class="section-title">Hábitos de conducción</p>
+
+        <div class="card habit">
+          <div class="habit-head">
+            <span>Frenada</span>
+            <span id="habitBrakingScore">82/100</span>
+          </div>
+          <div class="bar"><span id="habitBraking" style="width:82%;"></span></div>
+        </div>
+
+        <div class="card habit">
+          <div class="habit-head">
+            <span>Aceleración</span>
+            <span id="habitAccelerationScore">78/100</span>
+          </div>
+          <div class="bar"><span id="habitAcceleration" style="width:78%; background:var(--warning);"></span></div>
+        </div>
+
+        <div class="card habit">
+          <div class="habit-head">
+            <span>Velocidad constante</span>
+            <span id="habitSteadyScore">89/100</span>
+          </div>
+          <div class="bar"><span id="habitSteady" style="width:89%;"></span></div>
+        </div>
+
+        <p class="section-title">Consejo del día</p>
+
+        <div class="card tip-card">
+          <h3><span id="tipTitle">Reduce aceleraciones bruscas</span></h3>
+          <p class="muted" id="tipBody">
+            Mantén las RPM entre 1.500 y 2.500 cuando sea posible. Esto puede disminuir el consumo en ciudad y mejorar tu margen por viaje.
+          </p>
+        </div>
+      </section>
+
+      <!-- PERFIL -->
+      <section id="profile" class="screen">
+        <div class="topbar">
+          <div>
+            <h2>Perfil</h2>
+            <p class="small">Datos del conductor y vehículo</p>
+          </div>
+          <button class="icon-btn" data-action="profile-settings">⚙</button>
+        </div>
+
+        <div class="card profile-head">
+          <div class="avatar">👤</div>
+          <div>
+            <h3 id="profileName">Carlos Méndez</h3>
+            <div id="profileMeta">
+              <p class="small">correo@ejemplo.com</p>
+              <p class="small">+56 9 1234 5678 · Santiago</p>
+            </div>
+            <p class="accent">★ 4.92 rating · <span id="profilePlatform">Uber</span></p>
+          </div>
+        </div>
+
+        <div class="card">
+          <p class="metric-label">Vehículo</p>
+          <div class="row">
+            <p class="small">Marca<br><strong id="profileBrand">Toyota</strong></p>
+            <p class="small">Modelo<br><strong id="profileModel">Yaris</strong></p>
+            <p class="small">Año<br><strong id="profileYear">2020</strong></p>
+            <p class="small">Combustible<br><strong id="profileFuel">Gasolina</strong></p>
+          </div>
+        </div>
+
+        <div class="card">
+          <p class="metric-label">Objetivo de ahorro mensual</p>
+          <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <strong id="savingsGoalText">$12.400 / $20.000 CLP</strong>
+            <strong class="accent" id="savingsGoalPct">62%</strong>
+          </div>
+          <div class="bar"><span id="savingsGoalBar" style="width:62%; background:var(--warning);"></span></div>
+        </div>
+
+        <div class="card">
+          <div class="settings-row">
+            <span>Notificaciones</span>
+            <span class="muted">›</span>
+          </div>
+          <div class="settings-row">
+            <span>Unidades</span>
+            <span class="muted">›</span>
+          </div>
+          <div class="settings-row">
+            <span>Precio combustible</span>
+            <span class="muted"><span id="profileFuelPrice">$1.320/L</span></span>
+          </div>
+          <div class="settings-row">
+            <span>Estado OBD2</span>
+            <span class="accent">Conectado</span>
+          </div>
+        </div>
+
+        <button class="btn secondary" data-action="logout">Cerrar sesión</button>
+      </section>
+    </main>
+
+    <nav id="bottomNav" class="bottom-nav">
+      <button class="nav-btn active" data-nav="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 13a8 8 0 0 1 16 0"/><path d="M12 13l4-4"/></svg>
+        En vivo
+      </button>
+
+      <button class="nav-btn" data-nav="trips">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19h16"/><path d="M7 17V9"/><path d="M12 17V5"/><path d="M17 17v-6"/></svg>
+        Viajes
+      </button>
+
+      <button class="nav-btn" data-nav="insights">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 18l5-6 4 3 7-9"/><path d="M4 22h16"/></svg>
+        Insights
+      </button>
+
+      <button class="nav-btn" data-nav="profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        Perfil
+      </button>
+    </nav>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
