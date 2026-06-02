@@ -74,7 +74,11 @@ create policy "viajes propios" on public.trips
 
 -- ─── Crear perfil automáticamente al registrarse ────────────────────────────
 create or replace function public.handle_new_user()
-returns trigger language plpgsql security definer as $$
+returns trigger
+language plpgsql
+security definer
+set search_path = ''           -- search_path fijo (recomendación de seguridad)
+as $$
 begin
   insert into public.profiles (id, first_name, last_name, phone, city, platform, hours_per_day)
   values (
@@ -89,6 +93,9 @@ begin
   return new;
 end;
 $$;
+
+-- La función solo debe correr vía trigger, no por la API REST/RPC.
+revoke execute on function public.handle_new_user() from anon, authenticated, public;
 
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
