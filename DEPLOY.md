@@ -1,83 +1,68 @@
-# Guía de despliegue — OptiDriver
+# Guía de despliegue — OptiDriver (Supabase + Netlify)
 
-Arquitectura desplegada:
-- **Frontend** (Vite) → **Vercel** (estático, gratis)
-- **Backend** (Node + WebSocket + SQLite) → **Render** (servicio web, gratis)
+Arquitectura:
+- **Frontend** (Vite, estático) → **Netlify** (URL permanente, gratis)
+- **Auth + Base de datos + Realtime** → **Supabase** (gratis, datos permanentes)
+- **Sensor ELM327** → **agente local** (`agent/`) que publica en Supabase Realtime
 
-Tu equipo accederá a una URL permanente tipo `https://optidriver.vercel.app`.
-
----
-
-## Paso 0 — Subir el código a GitHub
-
-Ya dejé el repositorio inicializado con un commit. Solo falta enviarlo a GitHub:
-
-1. Crea un repositorio vacío en https://github.com/new (ej. `optidriver-mvp`). **No** marques "Add README".
-2. En la carpeta del proyecto, conecta y sube:
-   ```bash
-   git remote add origin https://github.com/TU-USUARIO/optidriver-mvp.git
-   git branch -M main
-   git push -u origin main
-   ```
+No necesitas hospedar ningún servidor propio. El sensor requiere un pequeño
+programa corriendo en el dispositivo conectado al ELM327 (eso no se puede evitar:
+ningún servicio en la nube puede leer un puerto Bluetooth/USB).
 
 ---
 
-## Paso 1 — Backend en Render
+## Paso 1 — Crear el proyecto Supabase
 
-1. Crea una cuenta en https://render.com (puedes entrar con tu GitHub).
-2. **New +** → **Blueprint** → selecciona tu repositorio.
-   - Render detecta `backend/render.yaml` automáticamente.
-   - Si prefieres manual: **New +** → **Web Service** →
-     - Root Directory: `backend`
-     - Build Command: `npm install`
-     - Start Command: `npm start`
-3. Deja que despliegue. Al terminar copia la URL, ej.:
-   ```
-   https://optidriver-backend.onrender.com
-   ```
-4. Verifica que responde abriendo `https://optidriver-backend.onrender.com/api/health`
-
-> **Nota plan free:** el servicio "duerme" tras 15 min sin uso (primer acceso tarda ~30 s) y la base SQLite se reinicia en cada deploy. Para datos permanentes, añade un disco (ya está descrito en `render.yaml`, requiere plan de pago) o migra a Postgres.
+1. Crea cuenta en https://supabase.com → **New project** (elige región cercana, ej. South America).
+2. Cuando esté listo, ve a **SQL Editor → New query**, pega el contenido de
+   [`supabase/schema.sql`](supabase/schema.sql) y pulsa **Run**. Esto crea las tablas
+   (`profiles`, `vehicles`, `trips`), la seguridad por usuario (RLS) y el perfil automático.
+3. Ve a **Authentication → Providers → Email** y **desactiva "Confirm email"**
+   (para que tu equipo pueda entrar sin confirmar correo en el MVP).
+4. Ve a **Project Settings → API** y copia:
+   - **Project URL** → `VITE_SUPABASE_URL`
+   - **anon public key** → `VITE_SUPABASE_ANON_KEY`
 
 ---
 
-## Paso 2 — Frontend en Vercel
+## Paso 2 — Subir el código a GitHub
 
-1. Crea una cuenta en https://vercel.com (entra con GitHub).
-2. **Add New** → **Project** → importa tu repositorio.
-   - Framework: **Vite** (se detecta solo).
-   - Build Command: `npm run build` · Output: `dist` (automático).
-3. **IMPORTANTE** — antes de desplegar, en **Environment Variables** agrega:
-   | Name | Value |
-   |------|-------|
-   | `VITE_API_URL` | `https://optidriver-backend.onrender.com` *(la URL del paso 1, sin `/` final)* |
-4. **Deploy**. Al terminar tendrás la URL pública, ej. `https://optidriver-mvp.vercel.app`.
+```bash
+git remote add origin https://github.com/TU-USUARIO/optidriver-mvp.git
+git branch -M main
+git push -u origin main
+```
 
 ---
 
-## Paso 3 — Compartir con tu equipo
+## Paso 3 — Desplegar el frontend en Netlify
 
-Envía la URL de Vercel a tu equipo. Cada integrante:
-- Abre la URL en su navegador (PC o móvil).
-- Crea su propia cuenta (el registro va al backend en Render).
-- Ve la telemetría en vivo (simulada, o real si hay un ELM327 conectado al backend).
+1. Crea cuenta en https://netlify.com (entra con GitHub).
+2. **Add new site → Import an existing project** → elige tu repo.
+   - Build command: `npm run build` · Publish directory: `dist` (lo detecta por `netlify.toml`).
+3. En **Site settings → Environment variables**, agrega:
+   | Key | Value |
+   |-----|-------|
+   | `VITE_SUPABASE_URL` | tu Project URL |
+   | `VITE_SUPABASE_ANON_KEY` | tu anon public key |
+4. **Deploy**. Obtendrás la URL pública, ej. `https://optidriver.netlify.app`.
 
-Cada vez que hagas `git push`, Vercel y Render **redepliegan automáticamente** — tu equipo siempre verá la última versión.
-
----
-
-## Resumen de variables de entorno
-
-**Frontend (Vercel):**
-- `VITE_API_URL` = URL del backend en Render
-
-**Backend (Render):**
-- `JWT_SECRET` = secreto para firmar tokens (Render lo genera con `render.yaml`)
-- `ELM_PORT`, `ELM_AUTO` = solo si conectas un ELM327 físico al servidor
+> Cada `git push` redespliega automáticamente. Comparte esa URL con tu equipo:
+> cada integrante crea su cuenta y ve sus propios datos (RLS los aísla).
 
 ---
 
-## Alternativas
+## Paso 4 — (Opcional) Datos del sensor en vivo
 
-- **Backend en Railway** (https://railway.app): soporta volúmenes persistentes en plan free; mismo `npm start`.
-- **Frontend en Netlify**: Build `npm run build`, publish `dist`, misma variable `VITE_API_URL`.
+Mira [`SENSOR.md`](SENSOR.md) para conectar el ELM327 y probar la telemetría real.
+
+---
+
+## Modo local (desarrollo)
+
+Sin variables de Supabase, la app corre con simulador + localStorage:
+```bash
+npm install
+npm run dev      # http://localhost:5173
+```
+Para desarrollar contra Supabase, crea `.env.local` con `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.

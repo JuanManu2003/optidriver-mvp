@@ -1,0 +1,14 @@
+{
+  "name": "optidriver-elm-agent",
+  "version": "1.0.0",
+  "description": "Agente local que lee el ELM327 (OBD2) y publica telemetría en Supabase Realtime",
+  "type": "module",
+  "main": "elm-supabase-agent.js",
+  "scripts": {
+    "start": "node elm-supabase-agent.js",
+    "sim": "node elm-supabase-agent.js --sim"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.106.2"
+  }
+}
