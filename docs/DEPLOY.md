@@ -11,12 +11,18 @@ ningún servicio en la nube puede leer un puerto Bluetooth/USB).
 
 ---
 
-## Paso 1 — Crear el proyecto Supabase
+## Paso 1 — Supabase (¡ya está creado!)
 
-1. Crea cuenta en https://supabase.com → **New project** (elige región cercana, ej. South America).
-2. Cuando esté listo, ve a **SQL Editor → New query**, pega el contenido de
-   [`supabase/schema.sql`](supabase/schema.sql) y pulsa **Run**. Esto crea las tablas
-   (`profiles`, `vehicles`, `trips`), la seguridad por usuario (RLS) y el perfil automático.
+> El proyecto Supabase ya existe y las tablas ya fueron creadas. Solo te queda
+> el punto 3 (desactivar confirmación de email). Los pasos 1–2 se documentan por
+> si algún día necesitas recrearlo desde cero.
+
+1. (Ya hecho) Proyecto creado en https://supabase.com.
+2. (Ya hecho) Tablas creadas ejecutando [`../supabase/schema.sql`](../supabase/schema.sql)
+   en **SQL Editor** — crea `profiles`, `vehicles`, `trips`, la seguridad por
+   usuario (RLS) y el perfil automático.
+3. **PENDIENTE:** ve a **Authentication → Sign In / Providers → Email** y
+   **desactiva "Confirm email"** (para que tu equipo entre sin confirmar correo).
 3. Ve a **Authentication → Providers → Email** y **desactiva "Confirm email"**
    (para que tu equipo pueda entrar sin confirmar correo en el MVP).
 4. Ve a **Project Settings → API** y copia:

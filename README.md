@@ -1,241 +1,119 @@
-# OptiDriver / FuelSense Pro — MVP con ELM327/OBD2
+# OptiDriver / FuelSense Pro
 
-App para conductores de Uber, DiDi y Cabify en Chile. Reduce gastos de combustible mediante telemetría real del vehículo (sensor ELM327/OBD2) con dashboard, historial e insights dinámicos.
+App para conductores de Uber, DiDi y Cabify en Chile. Muestra en tiempo real el
+consumo de combustible, hábitos de conducción y ahorro, leyendo datos del auto
+mediante un sensor **ELM327 (OBD2)**.
 
 ---
 
-## Arquitectura
+## 🗺️ Mapa del proyecto (qué hay en cada carpeta)
+
+Piensa en el proyecto como una casa con habitaciones ordenadas:
 
 ```
 optidriver-mvp/
-├── backend/              ← Node.js + Express + SQLite + WebSocket
-│   ├── server.js         ← Servidor principal (HTTP + WS)
-│   ├── db.js             ← Base de datos SQLite
-│   ├── middleware/auth.js ← JWT
-│   ├── routes/           ← auth, vehicles, trips, insights, telemetry
-│   └── elm/elmReader.js  ← Integración ELM327 vía puerto serie
-└── src/                  ← Frontend Vite + JS vanilla
-    ├── modules/api.js    ← Cliente HTTP + WebSocket
-    ├── modules/elmClient.js ← ELM327 vía Web Serial API (browser)
-    └── ...
+│
+├── 📁 src/         ← TODO el código de la app (lo que ves en pantalla)
+├── 📁 agent/       ← Programa que lee el sensor del auto y lo envía a la nube
+├── 📁 supabase/    ← El "plano" de la base de datos (tablas)
+├── 📁 docs/        ← Guías paso a paso (desplegar, conectar el sensor)
+├── 📁 public/      ← Archivos sueltos que se copian tal cual al sitio
+├── 📁 dist/        ← Se genera solo al compilar — NO se edita a mano
+│
+├── 📄 index.html       ← La página base donde viven todas las pantallas
+├── 📄 package.json     ← Lista de "ingredientes" (librerías) y comandos
+├── 📄 vite.config.js   ← Config de la herramienta que levanta la app
+├── 📄 netlify.toml     ← Config para publicar la app en Netlify
+├── 📄 .env.local       ← Tus claves secretas de Supabase (NO se comparte)
+└── 📄 README.md        ← Este archivo
 ```
+
+> Los archivos sueltos de la raíz (package.json, vite.config.js, etc.) **deben
+> estar ahí** porque las herramientas los buscan en ese lugar. No se pueden mover
+> a carpetas sin romper el proyecto.
 
 ---
 
-## Requisitos
-
-- Node.js 18+
-- npm 9+
-- (Opcional) Sensor ELM327 USB o Bluetooth conectado al puerto OBD2 del vehículo
-
----
-
-## Instalación
-
-### 1. Frontend
-```bash
-cd "C:\Optidriver MVP\optidriver-mvp"
-npm install
-```
-
-### 2. Backend
-```bash
-cd "C:\Optidriver MVP\optidriver-mvp\backend"
-npm install
-```
-
----
-
-## Ejecución en desarrollo
-
-**Terminal 1 — Backend:**
-```bash
-cd backend
-npm run dev
-# → http://localhost:3001
-# → ws://localhost:3001/ws
-```
-
-**Terminal 2 — Frontend:**
-```bash
-cd ..    # volver a la raíz del proyecto
-npm run dev
-# → http://localhost:5173
-```
-
-> El proxy de Vite redirige `/api/*` y `/ws` al backend automáticamente.
-
----
-
-## Configuración ELM327
-
-### Variables de entorno (backend/.env)
-```bash
-cp backend/.env.example backend/.env
-```
-
-```env
-PORT=3001
-JWT_SECRET=cambia_este_secreto
-
-# ELM327 OBD2
-ELM_PORT=COM3          # Windows: COM3 | Linux/Mac: /dev/ttyUSB0
-ELM_BAUD=38400
-ELM_POLL_MS=500
-ELM_AUTO=false         # true = conectar ELM automáticamente al arrancar
-```
-
-### Conexión USB
-1. Conecta el adaptador ELM327 al puerto OBD2 del vehículo (debajo del volante).
-2. Conecta el USB al PC.
-3. Windows: Device Manager → Ports → anota el COM (ej. COM3).
-4. Linux/Mac: `ls /dev/ttyUSB*`
-5. Configura `ELM_PORT` en el `.env`.
-
-### Conexión Bluetooth
-1. Parear el ELM327 BT en el sistema operativo.
-2. Windows: crear puerto COM virtual en Bluetooth settings.
-3. Linux: `rfcomm bind /dev/rfcomm0 <MAC> 1`
-4. Usar ese puerto en `ELM_PORT`.
-
-### Activar ELM desde la API
-```bash
-# Listar puertos disponibles
-curl http://localhost:3001/api/elm/ports
-
-# Conectar ELM en COM3
-curl -X POST http://localhost:3001/api/elm/connect \
-  -H "Content-Type: application/json" \
-  -d '{"port":"COM3"}'
-```
-
-### ELM vía Web Serial API (navegador)
-En Chrome/Edge 89+, la app puede conectarse directamente al ELM sin pasar por Node.js usando el módulo `src/modules/elmClient.js` y la Web Serial API.
-
----
-
-## API REST
-
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| POST | `/api/auth/register` | Registro de usuario |
-| POST | `/api/auth/login` | Login → JWT |
-| GET | `/api/auth/me` | Perfil del usuario autenticado |
-| GET | `/api/vehicles` | Vehículos del usuario |
-| POST | `/api/vehicles` | Crear vehículo |
-| PUT | `/api/vehicles/:id` | Editar vehículo |
-| DELETE | `/api/vehicles/:id` | Eliminar vehículo |
-| POST | `/api/trips/start` | Iniciar viaje |
-| POST | `/api/trips/:id/end` | Finalizar viaje con resumen |
-| GET | `/api/trips` | Historial de viajes |
-| GET | `/api/trips/summary` | Resumen semanal |
-| GET | `/api/insights` | Recomendaciones dinámicas |
-| GET | `/api/telemetry/status` | Estado del sensor ELM |
-| POST | `/api/telemetry/:tripId/tick` | Registrar tick de telemetría |
-| GET | `/api/elm/ports` | Puertos serie disponibles |
-| POST | `/api/elm/connect` | Conectar ELM327 |
-| GET | `/api/health` | Estado del servidor |
-
-### WebSocket — `ws://localhost:3001/ws`
-Mensajes emitidos por el servidor:
-```json
-{ "type": "telemetry", "data": { "speed": 52, "rpm": 1850, "fuel": 6.2, "score": 86, "source": "elm327" } }
-{ "type": "elm_status", "data": { "connected": true, "port": "COM3", "lastError": null } }
-```
-
----
-
-## Estructura del proyecto
+## 📁 Dentro de `src/` (aquí pasarás la mayor parte del tiempo)
 
 ```
 src/
-├── modules/
-│   ├── api.js              ← Cliente HTTP + WebSocket al backend
-│   ├── elmClient.js        ← ELM327 vía Web Serial API (browser)
-│   ├── telemetrySimulator.js ← Dual: WebSocket + simulador local
-│   ├── auth.js             ← Auth online (JWT) + fallback local
-│   ├── analytics.js        ← Score, consumo, fórmulas
-│   ├── sessionAnalytics.js ← Acumulador de sesión
-│   ├── navigation.js       ← Router de pantallas
-│   ├── storage.js          ← localStorage
-│   ├── recommendations.js  ← Tips de conducción
-│   ├── trips.js            ← Viajes mock (fallback)
-│   ├── validation.js       ← Validadores de formularios
-│   ├── vehicleCatalogUI.js ← UI selector de vehículo
-│   ├── vehicleProfile.js   ← Perfil del vehículo
-│   └── cityCatalogUI.js    ← UI selector de ciudad
-├── views/
-│   ├── welcome.js, login.js, register.js, onboarding.js
-│   ├── dashboard.js        ← Telemetría en tiempo real + guardado de trips
-│   ├── activeTrip.js       ← Resumen de sesión activa
-│   ├── history.js          ← Historial desde backend
-│   ├── insights.js         ← Recomendaciones desde backend
-│   ├── profile.js, vehicleSetup.js
-│   └── ...
-├── components/
-│   └── AlertBadge, BottomNav, Button, Card, Gauge, StatCard
-├── data/
-│   └── mockUser, mockVehicle, vehicleCatalog, chileCities, mockTrips
-└── styles/
-    └── main.css, variables.css, animations.css
-
-backend/
-├── server.js               ← Express + WebSocket + simulador fallback
-├── db.js                   ← SQLite (users, vehicles, trips, telemetry)
-├── middleware/auth.js       ← JWT
-├── routes/
-│   ├── auth.js, vehicles.js, trips.js, insights.js, telemetry.js
-└── elm/
-    └── elmReader.js         ← SerialPort + parseo OBD2 PIDs
+├── 📁 views/       ← Una pantalla = un archivo (login, dashboard, etc.)
+├── 📁 components/  ← Piezas reutilizables (botón, tarjeta, medidor...)
+├── 📁 modules/     ← La "lógica" (conexión a Supabase, cálculos, datos)
+├── 📁 data/        ← Listas fijas (ciudades de Chile, catálogo de autos)
+├── 📁 styles/      ← Los colores y el diseño (CSS)
+└── 📄 main.js      ← El punto de arranque que enciende todo
 ```
+
+**Las pantallas (`src/views/`):**
+| Archivo | Pantalla |
+|---|---|
+| `welcome.js` | Bienvenida |
+| `register.js` / `login.js` | Crear cuenta / Iniciar sesión |
+| `onboarding.js` | Perfil básico (ciudad, plataforma, horas) |
+| `vehicleSetup.js` | Vehículo + conexión OBD2 |
+| `dashboard.js` | Panel en vivo (velocidad, RPM, score) |
+| `history.js` | Historial de viajes |
+| `insights.js` | Análisis, proyecciones y exportar reporte |
+| `profile.js` | Datos del conductor |
+
+**La lógica clave (`src/modules/`):**
+| Archivo | Para qué sirve |
+|---|---|
+| `supabase.js` | Conexión con la base de datos en la nube |
+| `api.js` | Guardar/leer usuarios, vehículos y viajes |
+| `telemetrySimulator.js` | Recibe la telemetría (del sensor o simulada) |
+| `analytics.js` | Cálculos de consumo, score y ahorro |
+| `report.js` | Genera y exporta el reporte (CSV / PDF) |
+| `navigation.js` | Cambia entre pantallas |
 
 ---
 
-## PIDs OBD2 leídos
+## ▶️ Cómo correr la app en tu computador
 
-| PID | Descripción | Fórmula |
-|-----|-------------|---------|
-| `010D` | Velocidad km/h | byte A |
-| `010C` | RPM | ((A×256)+B)/4 |
-| `0111` | Posición acelerador % | (A/255)×100 |
-| `0105` | Temperatura motor °C | A−40 |
-| `012F` | Nivel combustible % | (A/255)×100 |
+1. Instala las librerías (solo la primera vez):
+   ```bash
+   npm install
+   ```
+2. Levanta la app:
+   ```bash
+   npm run dev
+   ```
+3. Abre **http://localhost:5173** en el navegador. Cada cambio que guardes en el
+   código se ve al instante.
 
----
-
-## Flujo de datos
-
-```
-ELM327 sensor
-    ↓ (SerialPort / USB / BT)
-backend/elm/elmReader.js
-    ↓ (callback por tick)
-backend/server.js → broadcastTelemetry()
-    ↓ (WebSocket ws://localhost:3001/ws)
-src/modules/telemetrySimulator.js (onWsMessage)
-    ↓ (onTick callback)
-src/views/dashboard.js → actualiza UI
-```
-
-Si no hay ELM conectado, el backend genera telemetría simulada y la transmite por el mismo WebSocket. El frontend no distingue la fuente (el badge ELM muestra el estado).
+> Si editas en VS Code, abre la carpeta `optidriver-mvp` completa
+> (Archivo → Abrir carpeta) y trabaja sobre todo dentro de `src/`.
 
 ---
 
-## Modos de operación
+## ☁️ Base de datos (Supabase)
 
-| Modo | Fuente de datos | Cuándo |
-|------|----------------|--------|
-| ELM327 real | Sensor OBD2 vía USB/BT | `ELM_AUTO=true` o POST `/api/elm/connect` |
-| Simulador backend | Algoritmo en Node.js | Sin ELM conectado, con backend activo |
-| Simulador local | Algoritmo en navegador | Sin backend disponible |
+La app guarda usuarios, vehículos y viajes en **Supabase** (base de datos en la
+nube, ya configurada). El "plano" de las tablas está en
+[`supabase/schema.sql`](supabase/schema.sql).
+
+Tus claves van en `.env.local` (ya creado). Ese archivo es secreto y **no** se
+sube a GitHub.
 
 ---
 
-## Build para producción
+## 📡 Sensor del auto (ELM327 / OBD2)
 
-```bash
-npm run build        # Genera dist/
-npm run preview      # Sirve el build local
-```
+La app web no puede leer el Bluetooth del sensor directamente, así que un pequeño
+programa en la carpeta [`agent/`](agent/) lo lee y envía los datos a la nube.
+Cómo probarlo (con y sin sensor real) está en [`docs/SENSOR.md`](docs/SENSOR.md).
 
-El backend se despliega como servidor Node.js independiente (Railway, Render, VPS).
+---
+
+## 🚀 Publicar la app para tu equipo
+
+Pasos para subirla a internet con Netlify: [`docs/DEPLOY.md`](docs/DEPLOY.md).
+
+---
+
+## 🎨 Cambiar el diseño
+
+Los colores están en [`src/styles/variables.css`](src/styles/variables.css).
+El resto del diseño en [`src/styles/main.css`](src/styles/main.css).
