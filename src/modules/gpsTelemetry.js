@@ -10,7 +10,7 @@
  *  - El usuario debe aceptar el permiso de ubicación.
  */
 
-import { ingestGpsTick, resetGps } from './telemetrySimulator.js';
+import { ingestGpsTick, resetGps, setLiveSource } from './telemetrySimulator.js';
 
 let watchId = null;
 let lastTs = null;
@@ -60,6 +60,7 @@ export function startGps(onError) {
   resetGps();
   lastTs = null;
   lastCoords = null;
+  setLiveSource(true); // apaga el simulador local de inmediato
 
   watchId = navigator.geolocation.watchPosition(
     (pos) => {
@@ -80,6 +81,9 @@ export function startGps(onError) {
       }
       lastCoords = pos.coords;
 
+      // Filtro de ruido: por debajo de 3 km/h el GPS "deriva" estando quieto.
+      if (speedKmh < 3) speedKmh = 0;
+
       ingestGpsTick({ speedKmh, dtSec: Math.min(Math.max(dtSec, 0.3), 5) });
     },
     (err) => onError?.(geoErrorMessage(err)),
@@ -97,4 +101,5 @@ export function stopGps() {
   }
   lastTs = null;
   lastCoords = null;
+  setLiveSource(false); // vuelve al modo normal (sin datos en vivo)
 }

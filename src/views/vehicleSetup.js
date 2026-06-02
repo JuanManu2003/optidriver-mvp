@@ -39,23 +39,16 @@ export function initVehicleSetup() {
 
   bindAction('[data-action="start-gps"]', () => {
     if (!validateAndSaveVehicle()) return;
-    showFormErrors('gpsError', []);
 
     if (!isGpsSupported()) {
-      showFormErrors('gpsError', ['Tu navegador no permite GPS. Usa el modo demostración.']);
+      showToast('GPS no disponible', 'Tu navegador no permite ubicación. Usa el modo demostración.');
       return;
     }
 
     // Pide el permiso de ubicación y arranca la medición.
-    const ok = startGps((msg) => {
-      showFormErrors('gpsError', [msg]);
-      showToast('GPS', msg);
-    });
-
-    if (ok) {
-      showToast('Medición activa', 'Sigue tu conducción en el panel en vivo.');
-      goTo('dashboard');
-    }
+    startGps((msg) => showToast('Ubicación', msg));
+    showToast('Medición activa', 'Acepta el permiso de ubicación y empieza a manejar.');
+    goTo('dashboard');
   });
 
   bindAction('[data-action="skip-obd"]', () => {

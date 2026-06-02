@@ -180,6 +180,27 @@ export function resetGps() {
   lastGpsSpeed = null;
 }
 
+/**
+ * Activa/desactiva una fuente de datos en vivo (GPS o realtime).
+ * Al activarla, el simulador local deja de emitir de inmediato y los
+ * indicadores se ponen en 0 hasta que llegue la primera lectura real.
+ */
+export function setLiveSource(on) {
+  usingBackend = Boolean(on);
+  if (on) {
+    lastGpsSpeed = null;
+    state.speed = 0;
+    state.rpm = 800;
+    state.fuelPer100 = 0;
+    state.score = 0;
+    state.mode = 'idle';
+    state.source = 'gps';
+    if (onTickCallback) {
+      onTickCallback(getState(), { harshAccel: false, harshBrake: false, isIdle: true, money: { clp: 0 } });
+    }
+  }
+}
+
 // ─── Toast & eventos ──────────────────────────────────────────────────────────
 
 export function showToast(title, text) {

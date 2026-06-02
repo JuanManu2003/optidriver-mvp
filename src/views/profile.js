@@ -7,6 +7,15 @@ import { formatCLP } from '../modules/analytics.js';
 import { resetSessionAnalytics } from '../modules/sessionAnalytics.js';
 import { resetTripCost } from '../modules/telemetrySimulator.js';
 import { bindAction } from '../components/Button.js';
+import { startGps, stopGps, isGpsRunning, isGpsSupported } from '../modules/gpsTelemetry.js';
+
+function renderGpsToggle() {
+  const toggle = document.getElementById('gpsToggle');
+  const statusText = document.getElementById('gpsStatusText');
+  const on = isGpsRunning();
+  if (toggle) toggle.setAttribute('aria-checked', on ? 'true' : 'false');
+  if (statusText) statusText.textContent = on ? 'Activada · midiendo' : 'Desactivada';
+}
 
 function renderProfile() {
   const user = getUser();
@@ -45,11 +54,27 @@ export function initProfile() {
   renderProfile();
 
   document.addEventListener('screenchange', (e) => {
-    if (e.detail?.screenId === 'profile') renderProfile();
+    if (e.detail?.screenId === 'profile') { renderProfile(); renderGpsToggle(); }
   });
 
   bindAction('[data-action="profile-settings"]', () => {
     showToast('Configuración', 'Panel de configuración visual para el MVP.');
+  });
+
+  // Activar / desactivar la ubicación (GPS) desde el perfil
+  bindAction('[data-action="toggle-gps"]', () => {
+    if (isGpsRunning()) {
+      stopGps();
+      showToast('Ubicación desactivada', 'Ya no se está midiendo tu conducción.');
+    } else {
+      if (!isGpsSupported()) {
+        showToast('GPS no disponible', 'Tu navegador no permite acceder a la ubicación.');
+        return;
+      }
+      startGps((msg) => showToast('GPS', msg));
+      showToast('Ubicación activada', 'Midiendo tu conducción por GPS.');
+    }
+    renderGpsToggle();
   });
 
   bindAction('[data-action="logout"]', () => {

@@ -275,8 +275,6 @@
             <div class="obd-icon">📍</div>
           </div>
 
-          <div id="gpsError" class="form-errors hidden" role="alert"></div>
-
           <button class="btn" data-action="start-gps">Iniciar medición por GPS</button>
           <button class="btn secondary" data-action="skip-obd">Entrar con datos de demostración</button>
         </div>
@@ -551,8 +549,13 @@
             <span class="muted"><span id="profileFuelPrice">$1.320/L</span></span>
           </div>
           <div class="settings-row">
-            <span>Estado OBD2</span>
-            <span class="accent">Conectado</span>
+            <div>
+              <span>Ubicación (GPS)</span>
+              <p class="small" id="gpsStatusText">Desactivada</p>
+            </div>
+            <button class="toggle" id="gpsToggle" data-action="toggle-gps" role="switch" aria-checked="false">
+              <span class="toggle-knob"></span>
+            </button>
           </div>
         </div>
 
