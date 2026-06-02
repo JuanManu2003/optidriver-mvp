@@ -225,8 +225,8 @@
           <div></div>
         </div>
 
-        <h1>Vehículo y OBD2</h1>
-        <p class="subtitle">Ingresa datos simples del auto y simula la conexión al adaptador.</p>
+        <h1>Tu vehículo</h1>
+        <p class="subtitle">Ingresa los datos de tu auto y elige cómo medir tu conducción.</p>
 
         <div id="setupVehicleErrors" class="form-errors hidden" role="alert"></div>
 
@@ -269,14 +269,16 @@
 
           <div class="obd-card">
             <div>
-              <h3>Conexión OBD2</h3>
-              <p class="small">Conecta vía Bluetooth para recibir datos en tiempo real.</p>
+              <h3>Medir con GPS</h3>
+              <p class="small">Usa el GPS de tu teléfono para medir velocidad, frenadas y aceleración. No necesita ningún dispositivo extra.</p>
             </div>
-            <div class="obd-icon">⌁</div>
+            <div class="obd-icon">📍</div>
           </div>
 
-          <button class="btn" data-action="connect-obd">Conectar dispositivo</button>
-          <button class="btn secondary" data-action="skip-obd">Entrar con datos simulados</button>
+          <div id="gpsError" class="form-errors hidden" role="alert"></div>
+
+          <button class="btn" data-action="start-gps">Iniciar medición por GPS</button>
+          <button class="btn secondary" data-action="skip-obd">Entrar con datos de demostración</button>
         </div>
       </section>
 

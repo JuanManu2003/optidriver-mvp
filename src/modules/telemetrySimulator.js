@@ -31,6 +31,7 @@ let toastTimer      = null;
 let onTickCallback  = null;
 let usingBackend    = false;
 let paused          = false;
+let lastGpsSpeed    = null;
 
 // ─── Simulación local (fallback) ──────────────────────────────────────────────
 
@@ -126,6 +127,57 @@ function processBackendTick(data) {
   const events = { harshAccel: false, harshBrake: false, isIdle, money };
   if (onTickCallback) onTickCallback(getState(), events);
   emitEvents(events);
+}
+
+// ─── Telemetría desde GPS (modo Waze, sin hardware) ────────────────────────────
+//
+// Recibe la velocidad real del GPS del teléfono y deriva el resto (RPM y consumo
+// estimados, score, eventos de frenada/aceleración brusca) reutilizando analytics.
+
+export function ingestGpsTick({ speedKmh, dtSec = 1 }) {
+  if (paused) return;
+  usingBackend = true; // desactiva el simulador local
+
+  const speed = Math.max(0, Math.round(speedKmh || 0));
+  const prev = lastGpsSpeed == null ? speed : lastGpsSpeed;
+  lastGpsSpeed = speed;
+
+  // Aceleración en km/h por segundo → detectar maniobras bruscas
+  const accel = (speed - prev) / Math.max(dtSec, 0.3);
+  const harshAccel = accel > 9;    // acelerón fuerte
+  const harshBrake = accel < -11;  // frenada fuerte
+  const isIdle = speed <= 3;
+
+  const rpm = isIdle ? 800 + Math.floor(Math.random() * 80) : rpmFromSpeed(speed, 3);
+  const fuelPer100 = fuelPer100FromTelemetry({ speed, rpm, isIdle, harshAccel, harshBrake });
+  const score = computeScore({ speed, rpm, fuelPer100, isIdle, harshAccel, harshBrake });
+  const money = estimateMoneyDelta({ fuelPer100, speed: Math.max(speed, isIdle ? 0 : 5), dtSec });
+
+  state.speed = speed;
+  state.rpm = rpm;
+  state.fuelPer100 = fuelPer100;
+  state.score = score;
+  state.mode = harshBrake ? 'brake' : harshAccel ? 'accel' : isIdle ? 'idle' : 'cruise';
+  state.source = 'gps';
+
+  if (money.clp > 0) {
+    state.sessionLossClp += money.clp;
+    state.tripCostClp += money.clp;
+  } else {
+    state.sessionSavingsClp += Math.abs(money.clp);
+    state.tripCostClp = Math.max(1200, state.tripCostClp + money.clp);
+  }
+
+  const badge = document.getElementById('elmStatusBadge');
+  if (badge) badge.textContent = '🟢 GPS en vivo';
+
+  const events = { harshAccel, harshBrake, isIdle, money };
+  if (onTickCallback) onTickCallback(getState(), events);
+  emitEvents(events);
+}
+
+export function resetGps() {
+  lastGpsSpeed = null;
 }
 
 // ─── Toast & eventos ──────────────────────────────────────────────────────────

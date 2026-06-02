@@ -10,6 +10,7 @@ import {
   validateVehicleForm,
 } from '../modules/vehicleCatalogUI.js';
 import { setFieldError, showFormErrors } from '../modules/validation.js';
+import { startGps, isGpsSupported } from '../modules/gpsTelemetry.js';
 
 function validateAndSaveVehicle() {
   showFormErrors('setupVehicleErrors', []);
@@ -36,13 +37,25 @@ export function initVehicleSetup() {
   initVehicleCatalogSelectors();
   loadVehicleIntoSelectors(getVehicle());
 
-  bindAction('[data-action="connect-obd"]', () => {
+  bindAction('[data-action="start-gps"]', () => {
     if (!validateAndSaveVehicle()) return;
-    showToast(
-      'OBD2 conectado',
-      'Dispositivo Bluetooth vinculado correctamente. Iniciando panel en vivo.',
-    );
-    setTimeout(() => goTo('dashboard'), 900);
+    showFormErrors('gpsError', []);
+
+    if (!isGpsSupported()) {
+      showFormErrors('gpsError', ['Tu navegador no permite GPS. Usa el modo demostración.']);
+      return;
+    }
+
+    // Pide el permiso de ubicación y arranca la medición.
+    const ok = startGps((msg) => {
+      showFormErrors('gpsError', [msg]);
+      showToast('GPS', msg);
+    });
+
+    if (ok) {
+      showToast('Medición activa', 'Sigue tu conducción en el panel en vivo.');
+      goTo('dashboard');
+    }
   });
 
   bindAction('[data-action="skip-obd"]', () => {

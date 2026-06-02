@@ -21,7 +21,8 @@
       "Bash(git check-ignore *)",
       "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'Agregar _redirects para enrutado SPA en Netlify *)",
       "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'Limpiar y ordenar el proyecto *)",
-      "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'Arreglar conexion del sensor a la app via Supabase Realtime *)"
+      "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'Arreglar conexion del sensor a la app via Supabase Realtime *)",
+      "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'Agregar modo GPS \\(medicion sin hardware, estilo Waze\\) *)"
     ]
   }
 }
