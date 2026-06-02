@@ -5,8 +5,8 @@
   "type": "module",
   "main": "elm-supabase-agent.js",
   "scripts": {
-    "start": "node elm-supabase-agent.js",
-    "sim": "node elm-supabase-agent.js --sim"
+    "start": "node --env-file=.env elm-supabase-agent.js",
+    "sim": "node --env-file=.env elm-supabase-agent.js --sim"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.2"

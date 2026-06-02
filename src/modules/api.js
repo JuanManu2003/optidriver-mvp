@@ -240,7 +240,7 @@ let wsCallbacks = {};
 export function connectWS() {
   if (!hasSupabase || channel) return;
 
-  channel = supabase.channel('telemetry', { config: { broadcast: { self: false } } });
+  channel = supabase.channel('telemetry');
 
   channel.on('broadcast', { event: 'tick' }, ({ payload }) => {
     const cb = wsCallbacks['telemetry'];
