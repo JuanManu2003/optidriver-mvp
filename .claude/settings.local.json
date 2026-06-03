@@ -26,7 +26,12 @@
       "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'Arreglar indicadores que se movian estando quieto + toggle de ubicacion *)",
       "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'Rediseno de panel \\(enfoque dinero/GPS\\), boton Iniciar viaje y perfil nuevo *)",
       "mcp__87b72240-8287-45e0-80c5-7722ffc53570__get_project",
-      "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'Insights y PDF: logo+nombre en PDF, grafico real de scores, proyeccion historica *)"
+      "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'Insights y PDF: logo+nombre en PDF, grafico real de scores, proyeccion historica *)",
+      "Bash(gh --version)",
+      "Bash(gh auth *)",
+      "PowerShell($gh = Get-Command gh -ErrorAction SilentlyContinue; if\\($gh\\){ \"gh instalado: $\\($gh.Source\\)\"; gh auth status 2>&1 | Select-Object -First 6 } else { \"gh NO instalado\" })",
+      "Bash(git branch *)",
+      "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'chore: actualizar allowlist local *)"
     ]
   }
 }
