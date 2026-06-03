@@ -14,6 +14,7 @@ const session = {
   speedSum: 0,
   rpmSum: 0,
   fuelPer100Sum: 0,
+  maxSpeed: 0,
 };
 
 export function recordTelemetryTick(telemetry, events = {}) {
@@ -36,6 +37,7 @@ export function recordTelemetryTick(telemetry, events = {}) {
   session.speedSum += telemetry.speed || 0;
   session.rpmSum += telemetry.rpm || 0;
   session.fuelPer100Sum += telemetry.fuelPer100 || 0;
+  session.maxSpeed = Math.max(session.maxSpeed, telemetry.speed || 0);
 
   const dtHours = 1.5 / 3600;
   session.distanceKm += (telemetry.speed || 0) * dtHours;
@@ -57,6 +59,7 @@ export function getSessionSummary() {
     ticks: session.ticks,
     avgScore,
     avgSpeed: Math.round(session.speedSum / ticks),
+    maxSpeed: Math.round(session.maxSpeed),
     avgRpm: Math.round(session.rpmSum / ticks),
     avgFuelPer100: Number((session.fuelPer100Sum / ticks).toFixed(1)),
     harshBrakes: session.harshBrakes,
@@ -84,4 +87,5 @@ export function resetSessionAnalytics() {
   session.speedSum = 0;
   session.rpmSum = 0;
   session.fuelPer100Sum = 0;
+  session.maxSpeed = 0;
 }

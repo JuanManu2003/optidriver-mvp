@@ -285,91 +285,77 @@
         <div class="dashboard-header">
           <button class="icon-btn" data-action="dashboard-menu">☰</button>
           <div class="live-title">
-            <h3>En vivo</h3>
-            <span class="status-dot" id="elmStatusBadge">Conectado</span>
+            <h3>Mi viaje</h3>
+            <span class="status-dot" id="elmStatusBadge">GPS listo</span>
           </div>
-          <button class="icon-btn" data-action="dashboard-alert">⌁</button>
+          <div style="width:40px"></div>
         </div>
 
-        <div class="score-card">
-          <div class="score-ring">
-            <div class="score-inner">
-              <div>
-                <strong id="scoreValue">86</strong>
-                <span id="scoreLabel">Excelente</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="metric-grid">
-          <div class="metric-card">
-            <p class="metric-label">Combustible</p>
-            <p class="metric-value"><span id="fuelValue">6,2</span></p>
-            <p class="unit">L/100 km</p>
-          </div>
-
-          <div class="metric-card">
-            <p class="metric-label">Velocidad</p>
-            <p class="metric-value"><span id="speedValue">58</span></p>
-            <p class="unit">km/h</p>
-          </div>
-
-          <div class="metric-card">
-            <p class="metric-label">RPM</p>
-            <p class="metric-value"><span id="rpmValue">1850</span></p>
-            <p class="unit">rpm</p>
-          </div>
-
-          <div class="metric-card">
-            <p class="metric-label">Costo viaje</p>
-            <p class="metric-value">$<span id="costValue">2450</span></p>
-            <p class="unit">CLP aprox.</p>
+        <!-- ESTADO: sin viaje iniciado -->
+        <div id="tripIdleState">
+          <div class="card start-card">
+            <div class="start-icon">🚗</div>
+            <h2>Listo para tu viaje</h2>
+            <p class="muted">Pulsa iniciar y conduce. Mediremos tu velocidad, distancia y maniobras con el GPS, y estimaremos tu gasto.</p>
+            <button class="btn" data-action="start-trip">▶ Iniciar viaje</button>
+            <p class="small" id="startHint">Se te pedirá permiso de ubicación.</p>
           </div>
         </div>
 
-        <div class="card savings-card" id="sessionSummary">
-          <p class="metric-label">Sesión en curso</p>
-          <div class="summary-grid">
-            <div class="summary-item">
-              <strong id="sessionLoss">$0</strong>
-              <span class="small">pérdida</span>
+        <!-- ESTADO: viaje en curso -->
+        <div id="tripActiveState" class="hidden">
+          <!-- Hero: dinero (lo que le importa al conductor) -->
+          <div class="card money-hero">
+            <div class="money-head">
+              <span class="metric-label">Costo del viaje</span>
+              <span class="est-tag">estimado</span>
             </div>
-            <div class="summary-item">
-              <strong id="sessionSavings">$0</strong>
-              <span class="small">ahorro</span>
-            </div>
-            <div class="summary-item">
-              <strong id="sessionDistance">0 km</strong>
-              <span class="small">recorrido</span>
-            </div>
-          </div>
-          <p class="small" style="margin-top:10px;">Score promedio sesión: <strong id="sessionAvgScore">—</strong></p>
-        </div>
-
-        <div class="trip-controls">
-          <button class="btn secondary" id="toggleTripBtn" data-action="toggle-trip">⏸ Pausar</button>
-          <button class="btn" id="finishTripBtn" data-action="finish-trip">Finalizar y guardar</button>
-        </div>
-
-        <p class="section-title">Eventos en tiempo real</p>
-
-        <div id="eventList">
-          <div class="event">
-            <div class="event-icon danger">!</div>
-            <div>
-              <strong>Frenado brusco detectado</strong>
-              <p class="small">Hace 2 min · Costo estimado: $45 CLP</p>
+            <p class="money-big">$<span id="costValue">0</span> <span class="money-unit">CLP</span></p>
+            <div class="money-split">
+              <div><strong class="good" id="sessionSavings">$0</strong><span class="small">ahorro</span></div>
+              <div><strong class="bad" id="sessionLoss">$0</strong><span class="small">pérdida</span></div>
             </div>
           </div>
 
-          <div class="event">
-            <div class="event-icon good">✓</div>
-            <div>
-              <strong>Zona de velocidad eficiente</strong>
-              <p class="small">Hace 8 min · Buen rendimiento</p>
+          <!-- Métricas reales del GPS -->
+          <div class="metric-grid">
+            <div class="metric-card">
+              <p class="metric-label">Velocidad</p>
+              <p class="metric-value"><span id="speedValue">0</span></p>
+              <p class="unit">km/h</p>
+            </div>
+            <div class="metric-card">
+              <p class="metric-label">Distancia</p>
+              <p class="metric-value"><span id="distValue">0,0</span></p>
+              <p class="unit">km</p>
+            </div>
+            <div class="metric-card">
+              <p class="metric-label">Tiempo</p>
+              <p class="metric-value"><span id="tripTimeValue">00:00</span></p>
+              <p class="unit">min</p>
+            </div>
+            <div class="metric-card">
+              <p class="metric-label">Vel. máx</p>
+              <p class="metric-value"><span id="maxSpeedValue">0</span></p>
+              <p class="unit">km/h</p>
             </div>
           </div>
+
+          <!-- Maniobras y consumo estimado -->
+          <div class="card">
+            <div class="mini-row">
+              <div><strong id="harshBrakeCount">0</strong><span class="small">frenadas bruscas</span></div>
+              <div><strong id="harshAccelCount">0</strong><span class="small">aceleraciones</span></div>
+              <div><strong id="avgSpeedValue">0</strong><span class="small">vel. media</span></div>
+              <div><strong id="fuelValue">0</strong><span class="small">L/100 <em>(est.)</em></span></div>
+            </div>
+            <p class="small driving-chip" id="drivingChip">Conducción: —</p>
+          </div>
+
+          <button class="btn" data-action="finish-trip" id="finishTripBtn">Finalizar y guardar viaje</button>
+
+          <p class="section-title">Eventos en tiempo real</p>
+          <div id="eventList"></div>
         </div>
       </section>
 
@@ -499,55 +485,88 @@
         <div class="topbar">
           <div>
             <h2>Perfil</h2>
-            <p class="small">Datos del conductor y vehículo</p>
+            <p class="small">Tu cuenta y preferencias</p>
           </div>
-          <button class="icon-btn" data-action="profile-settings">⚙</button>
         </div>
 
+        <!-- Cabecera del conductor -->
         <div class="card profile-head">
-          <div class="avatar">👤</div>
-          <div>
+          <div class="avatar" id="profileAvatar">👤</div>
+          <div style="flex:1">
             <h3 id="profileName">Carlos Méndez</h3>
-            <div id="profileMeta">
-              <p class="small">correo@ejemplo.com</p>
-              <p class="small">+56 9 1234 5678 · Santiago</p>
+            <p class="small" id="profileEmailLine">correo@ejemplo.com</p>
+            <div class="profile-chips">
+              <span class="chip" id="profilePlatform">Uber</span>
+              <span class="chip chip-ghost" id="profileMemberSince">Desde 2024</span>
             </div>
-            <p class="accent">★ 4.92 rating · <span id="profilePlatform">Uber</span></p>
+          </div>
+          <button class="btn-link" data-action="edit-profile">Editar</button>
+        </div>
+
+        <!-- Resumen de estadísticas -->
+        <div class="stats-row">
+          <div class="stat-box"><strong id="statTrips">0</strong><span class="small">viajes</span></div>
+          <div class="stat-box"><strong id="statKm">0</strong><span class="small">km totales</span></div>
+          <div class="stat-box"><strong id="statScore">—</strong><span class="small">score prom.</span></div>
+        </div>
+
+        <!-- Formulario de edición (oculto) -->
+        <div class="card hidden" id="profileEditForm">
+          <p class="metric-label">Editar perfil</p>
+          <div class="form">
+            <div class="row">
+              <div class="input-group"><label for="editFirstName">Nombre</label><input id="editFirstName" type="text" /></div>
+              <div class="input-group"><label for="editLastName">Apellido</label><input id="editLastName" type="text" /></div>
+            </div>
+            <div class="input-group"><label for="editCity">Ciudad</label><input id="editCity" type="text" /></div>
+            <div class="row">
+              <div class="input-group">
+                <label for="editPlatform">Plataforma</label>
+                <select id="editPlatform"><option>Uber</option><option>DiDi</option><option>Cabify</option></select>
+              </div>
+              <div class="input-group"><label for="editHours">Horas/día</label><input id="editHours" type="number" min="1" max="16" /></div>
+            </div>
+            <p class="metric-label" style="margin-top:6px">Vehículo</p>
+            <div class="row">
+              <div class="input-group"><label for="editBrand">Marca</label><input id="editBrand" type="text" /></div>
+              <div class="input-group"><label for="editModel">Modelo</label><input id="editModel" type="text" /></div>
+            </div>
+            <div class="row">
+              <div class="input-group"><label for="editYear">Año</label><input id="editYear" type="number" min="1995" max="2026" /></div>
+              <div class="input-group">
+                <label for="editFuel">Combustible</label>
+                <select id="editFuel"><option>Gasolina</option><option>Diésel</option><option>Híbrido</option><option>Eléctrico</option></select>
+              </div>
+            </div>
+            <button class="btn" data-action="save-profile">Guardar cambios</button>
+            <button class="btn secondary" data-action="cancel-edit">Cancelar</button>
           </div>
         </div>
 
-        <div class="card">
-          <p class="metric-label">Vehículo</p>
-          <div class="row">
-            <p class="small">Marca<br><strong id="profileBrand">Toyota</strong></p>
-            <p class="small">Modelo<br><strong id="profileModel">Yaris</strong></p>
-            <p class="small">Año<br><strong id="profileYear">2020</strong></p>
-            <p class="small">Combustible<br><strong id="profileFuel">Gasolina</strong></p>
+        <!-- Vehículo (vista) -->
+        <div class="card" id="vehicleCard">
+          <div class="card-head">
+            <p class="metric-label">Mi vehículo</p>
           </div>
+          <p><strong id="profileVehicleName">Toyota Yaris</strong> · <span id="profileYear">2020</span></p>
+          <p class="small muted"><span id="profileFuel">Gasolina</span></p>
+          <span class="hidden" id="profileBrand">Toyota</span>
+          <span class="hidden" id="profileModel">Yaris</span>
         </div>
 
+        <!-- Meta de ahorro -->
         <div class="card">
-          <p class="metric-label">Objetivo de ahorro mensual</p>
+          <p class="metric-label">Meta de ahorro mensual</p>
           <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <strong id="savingsGoalText">$12.400 / $20.000 CLP</strong>
-            <strong class="accent" id="savingsGoalPct">62%</strong>
+            <strong id="savingsGoalText">$0 / $20.000 CLP</strong>
+            <strong class="accent" id="savingsGoalPct">0%</strong>
           </div>
-          <div class="bar"><span id="savingsGoalBar" style="width:62%; background:var(--warning);"></span></div>
+          <div class="bar"><span id="savingsGoalBar" style="width:0%;"></span></div>
         </div>
 
+        <!-- Preferencias -->
+        <p class="section-title">Preferencias</p>
         <div class="card">
-          <div class="settings-row">
-            <span>Notificaciones</span>
-            <span class="muted">›</span>
-          </div>
-          <div class="settings-row">
-            <span>Unidades</span>
-            <span class="muted">›</span>
-          </div>
-          <div class="settings-row">
-            <span>Precio combustible</span>
-            <span class="muted"><span id="profileFuelPrice">$1.320/L</span></span>
-          </div>
           <div class="settings-row">
             <div>
               <span>Ubicación (GPS)</span>
@@ -556,6 +575,19 @@
             <button class="toggle" id="gpsToggle" data-action="toggle-gps" role="switch" aria-checked="false">
               <span class="toggle-knob"></span>
             </button>
+          </div>
+          <div class="settings-row">
+            <div>
+              <span>Notificaciones</span>
+              <p class="small">Avisos de conducción</p>
+            </div>
+            <button class="toggle" id="notifToggle" data-action="toggle-notif" role="switch" aria-checked="true">
+              <span class="toggle-knob"></span>
+            </button>
+          </div>
+          <div class="settings-row">
+            <span>Precio combustible</span>
+            <span class="muted" id="profileFuelPrice">$1.320/L</span>
           </div>
         </div>
 

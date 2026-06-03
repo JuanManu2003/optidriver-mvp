@@ -1,13 +1,55 @@
-import { getUser } from '../modules/storage.js';
+import { getUser, getVehicle, updateUser, updateVehicle, resetSession } from '../modules/storage.js';
 import { syncProfileVehicleCard } from '../modules/vehicleProfile.js';
-import { resetSession } from '../modules/storage.js';
 import { goTo } from '../modules/navigation.js';
-import { showToast } from '../modules/telemetrySimulator.js';
+import { showToast, resetTripCost } from '../modules/telemetrySimulator.js';
 import { formatCLP } from '../modules/analytics.js';
 import { resetSessionAnalytics } from '../modules/sessionAnalytics.js';
-import { resetTripCost } from '../modules/telemetrySimulator.js';
 import { bindAction } from '../components/Button.js';
 import { startGps, stopGps, isGpsRunning, isGpsSupported } from '../modules/gpsTelemetry.js';
+import { tripsApi } from '../modules/api.js';
+
+function renderProfile() {
+  const user = getUser();
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+  set('profileName', user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Conductor');
+  set('profileEmailLine', user.email || '—');
+  set('profilePlatform', user.platform || 'Uber');
+  set('profileMemberSince', `Desde ${user.memberSince || '2024'}`);
+  set('profileFuelPrice', `$${formatCLP(user.fuelPricePerLiter || 1320)}/L`);
+
+  const avatar = document.getElementById('profileAvatar');
+  if (avatar) {
+    const initials = `${(user.firstName || user.name || 'C')[0] || ''}`.toUpperCase();
+    avatar.textContent = initials || '👤';
+  }
+
+  // Meta de ahorro
+  const goal = user.monthlySavingsGoal || 20000;
+  const current = user.monthlySavingsCurrent || 0;
+  const pct = Math.min(100, Math.round((current / goal) * 100));
+  set('savingsGoalText', `$${formatCLP(current)} / $${formatCLP(goal)} CLP`);
+  set('savingsGoalPct', `${pct}%`);
+  const bar = document.getElementById('savingsGoalBar');
+  if (bar) bar.style.width = `${pct}%`;
+
+  syncProfileVehicleCard();
+}
+
+async function renderStats() {
+  // Resumen real desde Supabase (con respaldo a 0 si no hay sesión/datos)
+  try {
+    const summary = await tripsApi.summary();
+    document.getElementById('statTrips').textContent = summary.tripCount ?? 0;
+    document.getElementById('statKm').textContent = summary.totalKm ?? 0;
+    document.getElementById('statScore').textContent = summary.avgScore || '—';
+  } catch {
+    document.getElementById('statTrips').textContent = '0';
+    document.getElementById('statKm').textContent = '0';
+    document.getElementById('statScore').textContent = '—';
+  }
+}
 
 function renderGpsToggle() {
   const toggle = document.getElementById('gpsToggle');
@@ -17,51 +59,74 @@ function renderGpsToggle() {
   if (statusText) statusText.textContent = on ? 'Activada · midiendo' : 'Desactivada';
 }
 
-function renderProfile() {
+// ─── Edición de perfil ─────────────────────────────────────────────────────────
+
+function openEdit() {
   const user = getUser();
-  const profileName = document.getElementById('profileName');
-  const profileMeta = document.getElementById('profileMeta');
-  const savingsText = document.getElementById('savingsGoalText');
-  const savingsPct = document.getElementById('savingsGoalPct');
-  const savingsBar = document.getElementById('savingsGoalBar');
-  const fuelPrice = document.getElementById('profileFuelPrice');
-  const platformEl = document.getElementById('profilePlatform');
+  const vehicle = getVehicle();
+  const val = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ''; };
 
-  if (profileName) profileName.textContent = user.name;
-  if (fuelPrice) fuelPrice.textContent = `$${formatCLP(user.fuelPricePerLiter)}/L`;
-  if (platformEl) platformEl.textContent = user.platform || '—';
+  val('editFirstName', user.firstName || (user.name || '').split(' ')[0]);
+  val('editLastName', user.lastName || (user.name || '').split(' ').slice(1).join(' '));
+  val('editCity', (user.city || '').split(',')[0]);
+  val('editPlatform', user.platform || 'Uber');
+  val('editHours', user.drivingHoursPerDay || 8);
+  val('editBrand', vehicle.brand);
+  val('editModel', vehicle.model);
+  val('editYear', vehicle.year);
+  val('editFuel', vehicle.fuelType || 'Gasolina');
 
-  if (profileMeta) {
-    const cityShort = user.city ? user.city.split(',')[0] : '—';
-    profileMeta.innerHTML = `
-      <p class="small">${user.email || '—'}</p>
-      <p class="small">${user.phoneDisplay || user.phone || '—'} · ${cityShort}</p>
-      <p class="small">Conductor desde ${user.memberSince} · ${user.drivingHoursPerDay || 8} h/día</p>
-    `;
-  }
+  document.getElementById('profileEditForm')?.classList.remove('hidden');
+}
 
-  const pct = Math.round((user.monthlySavingsCurrent / user.monthlySavingsGoal) * 100);
-  if (savingsText) {
-    savingsText.textContent = `$${formatCLP(user.monthlySavingsCurrent)} / $${formatCLP(user.monthlySavingsGoal)} CLP`;
-  }
-  if (savingsPct) savingsPct.textContent = `${pct}%`;
-  if (savingsBar) savingsBar.style.width = `${pct}%`;
+function closeEdit() {
+  document.getElementById('profileEditForm')?.classList.add('hidden');
+}
 
-  syncProfileVehicleCard();
+function saveEdit() {
+  const get = (id) => document.getElementById(id)?.value?.trim() || '';
+  const firstName = get('editFirstName');
+  const lastName = get('editLastName');
+
+  updateUser({
+    firstName,
+    lastName,
+    name: `${firstName} ${lastName}`.trim(),
+    city: get('editCity'),
+    platform: get('editPlatform'),
+    drivingHoursPerDay: Number(get('editHours')) || 8,
+  });
+
+  updateVehicle({
+    brand: get('editBrand'),
+    model: get('editModel'),
+    year: Number(get('editYear')) || 2020,
+    fuelType: get('editFuel'),
+  });
+
+  closeEdit();
+  renderProfile();
+  showToast('Perfil actualizado', 'Tus datos se guardaron correctamente.');
 }
 
 export function initProfile() {
   renderProfile();
+  renderStats();
+  renderGpsToggle();
 
   document.addEventListener('screenchange', (e) => {
-    if (e.detail?.screenId === 'profile') { renderProfile(); renderGpsToggle(); }
+    if (e.detail?.screenId === 'profile') {
+      renderProfile();
+      renderStats();
+      renderGpsToggle();
+      closeEdit();
+    }
   });
 
-  bindAction('[data-action="profile-settings"]', () => {
-    showToast('Configuración', 'Panel de configuración visual para el MVP.');
-  });
+  bindAction('[data-action="edit-profile"]', openEdit);
+  bindAction('[data-action="cancel-edit"]', closeEdit);
+  bindAction('[data-action="save-profile"]', saveEdit);
 
-  // Activar / desactivar la ubicación (GPS) desde el perfil
   bindAction('[data-action="toggle-gps"]', () => {
     if (isGpsRunning()) {
       stopGps();
@@ -71,13 +136,21 @@ export function initProfile() {
         showToast('GPS no disponible', 'Tu navegador no permite acceder a la ubicación.');
         return;
       }
-      startGps((msg) => showToast('GPS', msg));
+      startGps((msg) => showToast('Ubicación', msg));
       showToast('Ubicación activada', 'Midiendo tu conducción por GPS.');
     }
     renderGpsToggle();
   });
 
+  bindAction('[data-action="toggle-notif"]', () => {
+    const t = document.getElementById('notifToggle');
+    const on = t?.getAttribute('aria-checked') === 'true';
+    t?.setAttribute('aria-checked', on ? 'false' : 'true');
+    showToast('Notificaciones', on ? 'Desactivadas.' : 'Activadas.');
+  });
+
   bindAction('[data-action="logout"]', () => {
+    if (isGpsRunning()) stopGps();
     resetSessionAnalytics();
     resetTripCost();
     resetSession();

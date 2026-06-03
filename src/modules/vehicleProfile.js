@@ -29,4 +29,7 @@ export function syncProfileVehicleCard() {
   if (modelEl) modelEl.textContent = vehicle.model;
   if (yearEl) yearEl.textContent = String(vehicle.year);
   if (fuelEl) fuelEl.textContent = vehicle.fuelType;
+
+  const nameEl = document.getElementById('profileVehicleName');
+  if (nameEl) nameEl.textContent = `${vehicle.brand} ${vehicle.model}`.trim();
 }

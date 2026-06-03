@@ -590,6 +590,110 @@ input[type="range"] {
   margin-top: 0;
 }
 
+/* ─── Estado inicial del viaje ───────────────────────── */
+.start-card {
+  text-align: center;
+  padding: 32px 22px;
+  margin-top: 8px;
+}
+
+.start-icon {
+  font-size: 46px;
+  margin-bottom: 8px;
+}
+
+.start-card h2 {
+  margin-bottom: 6px;
+}
+
+.start-card .muted {
+  margin-bottom: 18px;
+}
+
+.start-card #startHint {
+  margin-top: 10px;
+}
+
+/* ─── Hero de dinero (panel principal) ───────────────── */
+.money-hero {
+  background: linear-gradient(135deg, var(--accent-soft), var(--surface));
+  border-color: rgba(0, 168, 107, 0.25);
+}
+
+.money-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.est-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 3px 8px;
+}
+
+.money-big {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin: 6px 0 14px;
+}
+
+.money-unit {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.money-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.money-split > div {
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.money-split strong {
+  display: block;
+  font-size: 18px;
+}
+
+.good { color: var(--accent); }
+.bad  { color: var(--danger); }
+
+.mini-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  text-align: center;
+}
+
+.mini-row strong {
+  display: block;
+  font-size: 19px;
+}
+
+.mini-row em {
+  font-style: normal;
+  color: var(--muted-2);
+}
+
+.driving-chip {
+  margin-top: 12px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--text);
+}
+
 /* ─── Controles de viaje ─────────────────────────────── */
 .trip-controls {
   display: grid;
@@ -770,6 +874,66 @@ input[type="range"] {
   color: var(--muted);
   font-size: 28px;
   border: 1px solid var(--line);
+}
+
+.profile-chips {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.chip-ghost {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  flex: 0 0 auto;
+  align-self: flex-start;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.stat-box {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 14px 10px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-box strong {
+  display: block;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .settings-row {

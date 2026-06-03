@@ -23,7 +23,8 @@
       "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'Limpiar y ordenar el proyecto *)",
       "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'Arreglar conexion del sensor a la app via Supabase Realtime *)",
       "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'Agregar modo GPS \\(medicion sin hardware, estilo Waze\\) *)",
-      "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'Arreglar indicadores que se movian estando quieto + toggle de ubicacion *)"
+      "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'Arreglar indicadores que se movian estando quieto + toggle de ubicacion *)",
+      "Bash(git -c user.name=OptiDriver -c user.email=dev@optidriver.local commit -q -m 'Rediseno de panel \\(enfoque dinero/GPS\\), boton Iniciar viaje y perfil nuevo *)"
     ]
   }
 }
