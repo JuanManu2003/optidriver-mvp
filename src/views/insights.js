@@ -1,4 +1,4 @@
-import { insightsApi } from '../modules/api.js';
+import { insightsApi, tripsApi } from '../modules/api.js';
 import { showToast, formatCLP } from '../modules/telemetrySimulator.js';
 import { getSessionSummary } from '../modules/sessionAnalytics.js';
 import { getRecommendation } from '../modules/recommendations.js';
@@ -38,8 +38,8 @@ function renderWeeklyStats(stats) {
   if (savingsEl) savingsEl.textContent = `$${(stats.savingsClp ?? 0).toLocaleString('es-CL')} CLP`;
 }
 
-function renderProjections() {
-  const p = buildProjections();
+async function renderProjections() {
+  const p = await buildProjections();
 
   const spendEl   = document.getElementById('projDaily');
   const savingsEl = document.getElementById('projMonthly');
@@ -57,6 +57,41 @@ function renderProjections() {
   if (detailEl) detailEl.textContent = p.perMonth.savingsClp >= 0
     ? `Ahorras ~$${formatCLP(p.perMonth.savingsClp)}/mes frente a un conductor promedio. ${p.perMonth.liters} L/mes.`
     : `Gastas ~$${formatCLP(Math.abs(p.perMonth.savingsClp))}/mes más que el promedio. Mejora tus hábitos.`;
+}
+
+async function renderTripChart() {
+  const cont = document.getElementById('tripChart');
+  if (!cont) return;
+
+  let trips = [];
+  try { trips = await tripsApi.list(7); } catch { trips = []; }
+
+  if (!trips.length) {
+    cont.innerHTML = '<p class="small muted" style="text-align:center;padding:18px 0">Aún no tienes viajes. Completa uno para ver tu progreso.</p>';
+    return;
+  }
+
+  // Orden cronológico (los más antiguos a la izquierda) y score por viaje
+  const scores = trips.map((t) => t.score || 0).reverse();
+  const W = 330, H = 120, pad = 10;
+  const stepX = scores.length > 1 ? (W - pad * 2) / (scores.length - 1) : 0;
+  const y = (s) => H - pad - (s / 100) * (H - pad * 2);
+  const pts = scores.map((s, i) => `${pad + i * stepX},${y(s)}`);
+
+  const dots = scores.map((s, i) => {
+    const color = s >= 85 ? '#00A86B' : s >= 75 ? '#E5A000' : '#E5484D';
+    return `<circle cx="${pad + i * stepX}" cy="${y(s)}" r="4.5" fill="${color}" />
+            <text x="${pad + i * stepX}" y="${y(s) - 9}" font-size="11" fill="#667085" text-anchor="middle">${s}</text>`;
+  }).join('');
+
+  cont.innerHTML = `
+    <svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="height:130px">
+      <line x1="0" y1="${H - pad}" x2="${W}" y2="${H - pad}" stroke="#E6E9EE" stroke-width="1"/>
+      ${scores.length > 1 ? `<polyline points="${pts.join(' ')}" fill="none" stroke="#00A86B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+      ${dots}
+    </svg>
+    <p class="small muted" style="text-align:center">Cada punto es un viaje (verde=excelente, amarillo=bueno, rojo=mejorable).</p>
+  `;
 }
 
 async function loadInsights() {
@@ -99,5 +134,6 @@ export function initInsights() {
     if (e.detail?.screenId !== 'insights') return;
     loadInsights();
     renderProjections();
+    renderTripChart();
   });
 }

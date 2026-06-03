@@ -426,22 +426,8 @@
         </div>
 
         <div class="card chart-card">
-          <p class="metric-label">Consumo últimos 7 días</p>
-          <svg class="chart" viewBox="0 0 330 120" preserveAspectRatio="none">
-            <line x1="0" y1="105" x2="330" y2="105" stroke="#E6E9EE" stroke-width="1"/>
-            <polyline points="0,72 55,56 110,80 165,44 220,66 275,50 330,62"
-              fill="none" stroke="#00C781" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="0" cy="72" r="5" fill="#00C781"/>
-            <circle cx="55" cy="56" r="5" fill="#00C781"/>
-            <circle cx="110" cy="80" r="5" fill="#00C781"/>
-            <circle cx="165" cy="44" r="5" fill="#00C781"/>
-            <circle cx="220" cy="66" r="5" fill="#00C781"/>
-            <circle cx="275" cy="50" r="5" fill="#00C781"/>
-            <circle cx="330" cy="62" r="5" fill="#00C781"/>
-          </svg>
-          <div style="display:flex; justify-content:space-between;" class="small">
-            <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
-          </div>
+          <p class="metric-label">Score de tus últimos viajes</p>
+          <div id="tripChart"></div>
         </div>
 
         <p class="section-title">Hábitos de conducción</p>

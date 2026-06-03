@@ -8,7 +8,7 @@
 import { getUser } from './storage.js';
 import { getSessionSummary } from './sessionAnalytics.js';
 import { formatCLP, FUEL_PRICE_CLP, BASELINE_FUEL_PER_100 } from './analytics.js';
-import { tripsApi } from './api.js';
+import { tripsApi, insightsApi } from './api.js';
 
 // Promedio de días trabajados al mes para conductores de apps en Chile
 const WORK_DAYS_PER_MONTH = 24;
@@ -17,44 +17,52 @@ const WORK_DAYS_PER_MONTH = 24;
  * Calcula proyecciones basadas en la sesión actual y el perfil del conductor.
  * Aquí es donde "horas de conducción" y "plataforma" influyen de verdad.
  */
-export function buildProjections() {
-  const user = getUser();
-  const session = getSessionSummary();
+// Velocidad urbana promedio (km/h) para estimar km a partir de horas conducidas.
+const AVG_URBAN_KMH = 28;
 
+/**
+ * Proyección de gasto/ahorro mensual, basada en:
+ *  - la eficiencia REAL medida en los viajes recientes (L/100 promedio), y
+ *  - las horas/día que declara el conductor en su perfil.
+ * Estable aunque no haya un viaje en curso (usa el historial, no la sesión).
+ */
+export async function buildProjections() {
+  const user = getUser();
   const hoursPerDay = Number(user.drivingHoursPerDay) || 8;
 
-  // Duración de la sesión actual en horas (ticks de ~1.5 s)
-  const sessionHours = Math.max((session.ticks * 1.5) / 3600, 0.01);
+  // Eficiencia promedio real de los últimos viajes (si no hay, usa baseline)
+  let avgFuel = BASELINE_FUEL_PER_100;
+  try {
+    const trips = await tripsApi.list(10);
+    const valid = trips.filter((t) => t.avgFuelPer100 > 0);
+    if (valid.length) {
+      avgFuel = valid.reduce((s, t) => s + t.avgFuelPer100, 0) / valid.length;
+    }
+  } catch { /* sin datos: baseline */ }
 
-  const kmPerHour     = session.distanceKm / sessionHours;
-  const litersPerHour = session.fuelLiters / sessionHours;
+  const kmPerDay = hoursPerDay * AVG_URBAN_KMH;
+  const litersPerDay = (kmPerDay * avgFuel) / 100;
+  const fuelCostPerDay = litersPerDay * FUEL_PRICE_CLP;
+  // Ahorro vs conductor promedio (baseline): positivo si consumes menos.
+  const savedPerDay = ((BASELINE_FUEL_PER_100 - avgFuel) / 100) * kmPerDay * FUEL_PRICE_CLP;
 
-  // Ahorro vs un conductor promedio (baseline). Se calcula en decimales a
-  // partir de los litros reales contra el consumo baseline, evitando el
-  // redondeo por tick. Positivo = consumes menos que el promedio.
-  const baselineLiters = (session.distanceKm * BASELINE_FUEL_PER_100) / 100;
-  const savedLiters    = baselineLiters - session.fuelLiters;
-  const savedClpPerHour = (savedLiters / sessionHours) * FUEL_PRICE_CLP;
-
-  // Gasto real de combustible por hora (aquí las horas/día influyen directo)
-  const fuelCostPerHour = litersPerHour * FUEL_PRICE_CLP;
-
-  const scale = (perHour, days) => Math.round(perHour * hoursPerDay * days);
+  const r = (n) => Math.round(n);
 
   return {
     platform: user.platform || 'Uber',
     hoursPerDay,
+    avgFuel: Number(avgFuel.toFixed(1)),
     perDay: {
-      savingsClp: scale(savedClpPerHour, 1),
-      fuelCostClp: scale(fuelCostPerHour, 1),
-      km: scale(kmPerHour, 1),
-      liters: Number((litersPerHour * hoursPerDay).toFixed(1)),
+      savingsClp: r(savedPerDay),
+      fuelCostClp: r(fuelCostPerDay),
+      km: r(kmPerDay),
+      liters: Number(litersPerDay.toFixed(1)),
     },
     perMonth: {
-      savingsClp: scale(savedClpPerHour, WORK_DAYS_PER_MONTH),
-      fuelCostClp: scale(fuelCostPerHour, WORK_DAYS_PER_MONTH),
-      km: scale(kmPerHour, WORK_DAYS_PER_MONTH),
-      liters: Number((litersPerHour * hoursPerDay * WORK_DAYS_PER_MONTH).toFixed(0)),
+      savingsClp: r(savedPerDay * WORK_DAYS_PER_MONTH),
+      fuelCostClp: r(fuelCostPerDay * WORK_DAYS_PER_MONTH),
+      km: r(kmPerDay * WORK_DAYS_PER_MONTH),
+      liters: Number((litersPerDay * WORK_DAYS_PER_MONTH).toFixed(0)),
     },
   };
 }
@@ -65,7 +73,7 @@ export function buildProjections() {
 export async function buildReportData() {
   const user = getUser();
   const session = getSessionSummary();
-  const projections = buildProjections();
+  const projections = await buildProjections();
 
   let trips = [];
   try {
@@ -73,6 +81,22 @@ export async function buildReportData() {
   } catch {
     trips = [];
   }
+
+  // Hábitos y score desde el histórico (mismo dato que la pantalla Insights);
+  // si no hay datos en backend, usa la sesión actual como respaldo.
+  let habits = session.habitScores;
+  let avgScore = session.avgScore;
+  try {
+    const ins = await insightsApi.get();
+    if (ins?.habits) {
+      habits = {
+        braking: ins.habits.braking,
+        acceleration: ins.habits.acceleration,
+        steadySpeed: ins.habits.steadySpeed,
+      };
+      avgScore = ins.habits.avgScore ?? avgScore;
+    }
+  } catch { /* respaldo a la sesión */ }
 
   return {
     generatedAt: new Date(),
@@ -83,8 +107,8 @@ export async function buildReportData() {
       platform: user.platform || '—',
       hoursPerDay: projections.hoursPerDay,
     },
-    habits: session.habitScores,
-    avgScore: session.avgScore,
+    habits,
+    avgScore,
     projections,
     trips,
   };
@@ -173,7 +197,11 @@ export function exportPDF(data) {
 <style>
   * { font-family: -apple-system, "Segoe UI", Arial, sans-serif; }
   body { color: #0F1419; padding: 32px; max-width: 800px; margin: 0 auto; }
-  h1 { color: #00A86B; margin-bottom: 2px; }
+  .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 2px; }
+  .brand-logo { width: 44px; height: 44px; background: #0F1419; border-radius: 12px; padding: 7px; box-sizing: border-box; }
+  .brand-name { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+  .brand-name span { color: #00A86B; }
+  .report-title { color: #00A86B; font-size: 15px; margin: 2px 0 0; }
   .sub { color: #667085; font-size: 13px; margin-bottom: 24px; }
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
   .box { border: 1px solid #E6E9EE; border-radius: 10px; padding: 14px; }
@@ -187,7 +215,19 @@ export function exportPDF(data) {
   @media print { body { padding: 0; } }
 </style></head>
 <body>
-  <h1>OptiDriver · Reporte de conducción</h1>
+  <div class="brand">
+    <svg class="brand-logo" viewBox="0 0 100 100" fill="none">
+      <path d="M52 7C36 27 22 45 22 65C22 84 36 94 52 94C68 94 82 84 82 65C82 45 68 27 52 7Z" fill="#F5F7FA"/>
+      <path d="M41 35H68L62 45H38C32 45 29 52 34 56L63 78H43L25 64C14 55 21 35 41 35Z" fill="#050608"/>
+      <path d="M23 64C43 70 56 79 67 94C52 96 38 92 28 82C24 78 22 72 23 64Z" fill="#00C781"/>
+      <path d="M35 70C50 75 60 85 67 94" stroke="#F5F7FA" stroke-width="5" stroke-linecap="round"/>
+      <path d="M20 63L10 60M22 72L13 76M27 80L20 88" stroke="#050608" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <div class="brand-name">Fuel<span>Sense</span></div>
+      <p class="report-title">Reporte de conducción</p>
+    </div>
+  </div>
   <p class="sub">Generado el ${data.generatedAt.toLocaleString('es-CL')}</p>
 
   <h2>Conductor</h2>
