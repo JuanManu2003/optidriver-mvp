@@ -121,7 +121,7 @@ function processBackendTick(data) {
   // Indicador visual: muestra la fuente real de los datos en vivo.
   const badge = document.getElementById('elmStatusBadge');
   if (badge) {
-    badge.textContent = data.source === 'elm327' ? '🟢 Sensor ELM en vivo' : '🟢 Datos en vivo';
+    badge.textContent = data.source === 'elm327' ? 'Sensor ELM en vivo' : 'Datos en vivo';
   }
 
   const events = { harshAccel: false, harshBrake: false, isIdle, money };
@@ -169,7 +169,7 @@ export function ingestGpsTick({ speedKmh, dtSec = 1 }) {
   }
 
   const badge = document.getElementById('elmStatusBadge');
-  if (badge) badge.textContent = '🟢 GPS en vivo';
+  if (badge) badge.textContent = 'GPS en vivo';
 
   const events = { harshAccel, harshBrake, isIdle, money };
   if (onTickCallback) onTickCallback(getState(), events);
