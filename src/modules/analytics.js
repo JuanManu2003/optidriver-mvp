@@ -1,5 +1,5 @@
 /** Precio referencia combustible Chile (CLP/L) */
-export const FUEL_PRICE_CLP = 1320;
+export const FUEL_PRICE_CLP = 1600;
 
 /** Consumo base urbano ride-hailing (L/100 km) */
 export const BASELINE_FUEL_PER_100 = 7.2;
