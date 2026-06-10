@@ -17,7 +17,7 @@ function renderProfile() {
   set('profileEmailLine', user.email || '—');
   set('profilePlatform', user.platform || 'Uber');
   set('profileMemberSince', `Desde ${user.memberSince || '2024'}`);
-  set('profileFuelPrice', `$${formatCLP(user.fuelPricePerLiter || 1320)}/L`);
+  set('profileFuelPrice', `$${formatCLP(user.fuelPricePerLiter || 1600)}/L`);
 
   const avatar = document.getElementById('profileAvatar');
   if (avatar) {
